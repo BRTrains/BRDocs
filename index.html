@@ -3,41 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="User documentation for British Rail inspired OpenTTD NewGRFs.">
-  <title>BRDocs · British Rail documentation</title>
+  <meta name="description" content="Documentation for the BRTrains family of OpenTTD NewGRFs.">
+  <title>BRTrains documentation</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="wordmark" href="#/"><span class="roundel">BR</span><span>BR<span class="wordmark-light">Docs</span></span></a>
-    <div class="header-actions">
-      <span id="project-status" class="status-pill">Connecting…</span>
-      <button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle dark mode">◐</button>
-    </div>
+    <a class="wordmark" href="#/"><span class="wordmark-mark">BR</span><span>BRTrains <b>docs</b></span></a>
+    <div class="header-actions"><button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle dark mode">◐</button></div>
   </header>
-  <div class="red-rule"></div>
   <div id="app" class="app-shell">
     <section id="project-landing" class="landing view">
-      <div class="eyebrow">BRBuild documentation library</div>
-      <h1>British Rail, <em>properly</em> documented.</h1>
-      <p class="lead">Choose a project to explore its vehicles, formations, liveries and the details that make each unit unique.</p>
-      <div id="project-grid" class="project-grid"><div class="loading-card">Finding BRBuild projects…</div></div>
-      <div class="landing-note"><span class="signal-dot"></span><span>Project data is read live from the sibling folders on the host.</span></div>
+      <div class="landing-copy"><div class="eyebrow">OpenTTD NewGRFs</div><h1>The BRTrains family,<br><span>documented.</span></h1><p class="lead">Explore the trains, trams and liveries that make up the BRTrains group of NewGRFs for OpenTTD.</p></div>
+      <div class="section-label"><span>Projects</span><span class="section-line"></span></div>
+      <div id="project-grid" class="project-grid"><div class="loading-card">Loading projects…</div></div>
     </section>
     <section id="project-docs" class="docs-view view hidden">
       <aside class="docs-nav">
-        <button id="back-projects" class="back-link" type="button">← All projects</button>
-        <div class="project-nav-title"><span id="nav-project-mark" class="mini-roundel">BR</span><div><strong id="nav-project-name">Project</strong><small>Passenger-facing guide</small></div></div>
+        <button id="back-projects" class="back-link" type="button">← Projects</button>
+        <div class="project-nav-title"><span id="nav-project-mark" class="mini-roundel">BR</span><div><strong id="nav-project-name">Project</strong><small>OpenTTD NewGRF</small></div></div>
+        <div class="nav-label">Documentation</div>
         <nav id="docs-nav-links" aria-label="Documentation sections">
-          <button class="nav-link active" data-section="overview" type="button">Overview</button>
-          <button class="nav-link" data-section="vehicles" type="button">Vehicles <span id="nav-vehicle-count"></span></button>
-          <button class="nav-link" data-section="about" type="button">Using the GRF</button>
-          <button class="nav-link muted-link" type="button" disabled>Maintainer notes <span>Soon</span></button>
+          <button class="nav-link active" data-section="overview" type="button"><span>Overview</span></button>
+          <button class="nav-link" data-section="vehicles" type="button"><span>Vehicles</span><small id="nav-vehicle-count"></small></button>
+          <button class="nav-link" data-section="liveries" type="button"><span>Liveries</span></button>
+          <button class="nav-link" data-section="about" type="button"><span>Using the GRF</span></button>
         </nav>
+        <div class="nav-footer"><button class="nav-link muted-link" type="button" disabled><span>Maintainer docs</span><small>soon</small></button></div>
       </aside>
-      <main class="docs-main">
-        <div id="docs-content"></div>
-      </main>
+      <main class="docs-main"><div class="docs-topline"><span>BRTrains / <strong id="docs-project-label">Project</strong></span><span class="docs-mode">User documentation</span></div><div id="docs-content"></div></main>
     </section>
   </div>
   <script src="app.js" defer></script>
