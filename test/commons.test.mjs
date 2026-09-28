@@ -13,10 +13,11 @@ test('accepts only Wikimedia Commons open licenses', () => {
 
 test('selects the first suitable openly licensed image', () => {
   const image = selectCommonsImage([
-    { title: 'File:Copyright.jpg', imageinfo: [{ extmetadata: { LicenseShortName: { value: 'All rights reserved' } } }] },
-    { title: 'File:Train.jpg', imageinfo: [{ extmetadata: { LicenseShortName: { value: 'CC BY-SA 4.0' } } }] },
+    { title: 'File:Copyright.jpg', imageinfo: [{ thumburl: 'https://example.test/copyright.jpg', extmetadata: { LicenseShortName: { value: 'All rights reserved' } } }] },
+    { title: 'File:Train.jpg', imageinfo: [{ thumburl: 'https://example.test/train.jpg', extmetadata: { LicenseShortName: { value: 'CC BY-SA 4.0' } } }] },
   ]);
   assert.equal(image.title, 'File:Train.jpg');
+  assert.equal(selectCommonsImage([{ title: 'File:Train.jpg', imageinfo: [{ extmetadata: { LicenseShortName: { value: 'CC BY-SA 4.0' } }, thumburl: 'https://example.test/train.jpg' }] }], ['File:Train.jpg']), null);
 });
 
 test('returns no image when search results have no open license', () => {
