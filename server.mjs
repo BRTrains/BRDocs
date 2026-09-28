@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(process.env.BRDOCS_ROOT || path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 4173);
-const text = value => String(value ?? '').trim().replace(/^['"]|['"]$/g, '');
+const text = value => String(value ?? '').split('#',1)[0].trim().replace(/^['"]|['"]$/g, '');
 const lines = source => source.replace(/\r/g, '').split('\n');
 const scalar = (source, key) => { const match = lines(source).find(line => new RegExp(`^\\s{2}${key}:`).test(line)); return match ? text(match.slice(match.indexOf(':') + 1).split(' #')[0]) : ''; };
 const list = (source, key) => { const result=[]; const rows=lines(source); const start=rows.findIndex(line=>line.trim()===`${key}:`); if(start<0)return result; for(let i=start+1;i<rows.length&&/^\s{4}- /.test(rows[i]);i++)result.push(text(rows[i].replace(/^\s{4}- /,''))); return result; };
