@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isOpenLicense, selectCommonsImage, renderCommonsMarkup, commonsSearchQuery } from '../server.mjs';
+import { isOpenLicense, selectCommonsImage, renderCommonsMarkup, commonsSearchQuery, commonsFileTitleFromUrl } from '../server.mjs';
 
 test('accepts only Wikimedia Commons open licenses', () => {
   assert.equal(isOpenLicense('CC BY-SA 4.0'), true);
@@ -31,4 +31,9 @@ test('renders Commons attribution markup safely', () => {
 
 test('searches OpenTTE vehicles as Thomas characters rather than real locomotives', () => {
   assert.equal(commonsSearchQuery({ name: 'OpenTTE2' }, { name: 'James the Red Engine', based_on: 'Furness Railway D5' }), 'Thomas the Tank Engine James the Red Engine');
+});
+
+test('accepts only Commons file URLs', () => {
+  assert.equal(commonsFileTitleFromUrl('https://commons.wikimedia.org/wiki/File:Thomas.jpg'), 'File:Thomas.jpg');
+  assert.equal(commonsFileTitleFromUrl('https://example.com/wiki/File:Thomas.jpg'), null);
 });
