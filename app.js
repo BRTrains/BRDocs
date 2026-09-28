@@ -1,8 +1,13 @@
 const state={projects:[],project:null,vehicles:[],manifest:null,formationTimers:[],animationSpeed:Number(localStorage.getItem('brdocs-animation-speed'))||900,section:'overview'};
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-$('theme-toggle').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=dark?'':'dark';localStorage.setItem('brdocs-theme',dark?'light':'dark')});
-if(localStorage.getItem('brdocs-theme')==='dark')document.documentElement.dataset.theme='dark';
+const systemTheme=()=>window.matchMedia?.('(prefers-color-scheme: dark)').matches?'dark':'light';
+const applyTheme=theme=>{document.documentElement.dataset.theme=theme==='dark'?'dark':''};
+const savedTheme=localStorage.getItem('brdocs-theme');
+applyTheme(savedTheme||systemTheme());
+$('theme-toggle').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme==='dark';const next=dark?'light':'dark';applyTheme(next);localStorage.setItem('brdocs-theme',next)});
+const themeMedia=window.matchMedia?.('(prefers-color-scheme: dark)');
+themeMedia?.addEventListener?.('change',()=>{if(!localStorage.getItem('brdocs-theme'))applyTheme(systemTheme())});
 $('back-projects').addEventListener('click',()=>location.hash='/');
 $('docs-nav-links').addEventListener('click',event=>{const button=event.target.closest('[data-section]');if(button&&!button.disabled){const section=button.dataset.section;location.hash=`/project/${encodeURIComponent(state.project.name)}/${section}`}});
 window.addEventListener('hashchange',route);
