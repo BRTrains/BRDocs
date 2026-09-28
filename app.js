@@ -2,12 +2,13 @@ const state={projects:[],project:null,vehicles:[],manifest:null,formationTimers:
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const systemTheme=()=>window.matchMedia?.('(prefers-color-scheme: dark)').matches?'dark':'light';
-const applyTheme=theme=>{document.documentElement.dataset.theme=theme==='dark'?'dark':''};
+const applyTheme=(theme,choice=theme)=>{document.documentElement.dataset.theme=theme==='dark'?'dark':'';document.querySelectorAll('[data-theme-choice]').forEach(button=>button.classList.toggle('active',button.dataset.themeChoice===choice))};
 const savedTheme=localStorage.getItem('brdocs-theme-override');
-applyTheme(savedTheme||systemTheme());
-$('theme-toggle').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme==='dark';const next=dark?'light':'dark';applyTheme(next);localStorage.setItem('brdocs-theme-override',next)});
+const selectedTheme=savedTheme||'system';
+applyTheme(selectedTheme==='system'?systemTheme():selectedTheme,selectedTheme);
+document.querySelectorAll('[data-theme-choice]').forEach(button=>button.addEventListener('click',()=>{const choice=button.dataset.themeChoice;if(choice==='system')localStorage.removeItem('brdocs-theme-override');else localStorage.setItem('brdocs-theme-override',choice);applyTheme(choice==='system'?systemTheme():choice,choice)}));
 const themeMedia=window.matchMedia?.('(prefers-color-scheme: dark)');
-themeMedia?.addEventListener?.('change',()=>{if(!localStorage.getItem('brdocs-theme-override'))applyTheme(systemTheme())});
+themeMedia?.addEventListener?.('change',()=>{if(!localStorage.getItem('brdocs-theme-override'))applyTheme(systemTheme(),'system')});
 $('back-projects').addEventListener('click',()=>location.hash='/');
 $('docs-nav-links').addEventListener('click',event=>{const button=event.target.closest('[data-section]');if(button&&!button.disabled){const section=button.dataset.section;location.hash=`/project/${encodeURIComponent(state.project.name)}/${section}`}});
 window.addEventListener('hashchange',route);
