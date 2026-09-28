@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isOpenLicense, selectCommonsImage } from '../server.mjs';
+import { isOpenLicense, selectCommonsImage, renderCommonsMarkup } from '../server.mjs';
 
 test('accepts only Wikimedia Commons open licenses', () => {
   assert.equal(isOpenLicense('CC BY-SA 4.0'), true);
@@ -21,4 +21,9 @@ test('selects the first suitable openly licensed image', () => {
 
 test('returns no image when search results have no open license', () => {
   assert.equal(selectCommonsImage([{ imageinfo: [{ extmetadata: { LicenseShortName: { value: 'Fair use' } } }] }]), null);
+});
+
+test('renders Commons attribution markup safely', () => {
+  const output = renderCommonsMarkup('The uploader was <a href="https://example.test/user" class="extiw">Pritch</a>. <script>alert(1)</script>');
+  assert.equal(output, 'The uploader was <a href="https://example.test/user" target="_blank" rel="noreferrer">Pritch</a>. alert(1)');
 });
