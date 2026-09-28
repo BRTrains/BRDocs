@@ -35,8 +35,8 @@ async function writeBlacklist(value){await fs.mkdir(COMMONS_CACHE,{recursive:tru
 function cookieValue(req,name){return (req.headers.cookie||'').split(';').map(item=>item.trim().split('=')).find(([key])=>key===name)?.[1]||'';}
 function isAdmin(req){return adminSessions.has(cookieValue(req,'brdocs_admin'));}
 async function requestBody(req){let body='';for await(const chunk of req)body+=chunk;return JSON.parse(body||'{}');}
-async function adminPasswordHash(){try{return (await read(ADMIN_PASSWORD_FILE)).trim()}catch{return process.env.BRDOCS_ADMIN_PASSWORD_HASH||''}}
-async function isValidPassword(password){const hash=crypto.createHash('sha256').update(String(password||'')).digest('hex');return hash===await adminPasswordHash();}
+async function adminPasswordHashes(){try{return(await read(ADMIN_PASSWORD_FILE)).split(/\r?\n/).map(line=>line.trim()).filter(Boolean)}catch{return(process.env.BRDOCS_ADMIN_PASSWORD_HASH||'').split(',').map(value=>value.trim()).filter(Boolean)}}
+async function isValidPassword(password){const hash=crypto.createHash('sha256').update(String(password||'')).digest('hex');return(await adminPasswordHashes()).includes(hash)}
 const profiles = source => { const start=source.indexOf('\nprofiles:'); if(start<0)return []; const end=source.indexOf('\nliveries:',start); const section=source.slice(start,end<0?source.length:end); const result=[]; for(const [index,row] of section.split('\n').entries()){if(!/^  - /.test(row))continue; const following=section.split('\n').slice(index,index+20).join('\n'); result.push({identifier:scalar(following,'identifier'),name:scalar(following,'name'),num_vehicles:scalar(following,'num_vehicles'),capacity:scalar(following,'capacity'),power:scalar(following,'power')})} return result; };
 const liveries = source => { const start=source.indexOf('\nliveries:'); if(start<0)return []; const section=source.slice(start); return section.split('\n').filter(row=>/^  - name:/.test(row)).map(row=>({name:text(row.split(':').slice(1).join(':')),special_tags:[]})); };
 async function read(file){return fs.readFile(file,'utf8')}
