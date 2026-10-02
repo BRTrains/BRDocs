@@ -123,12 +123,7 @@ stats:
 cargo: passenger
 
 dates:
-  introduction_date: 1956-01-01
-
-profiles:
-  - identifier: DEFAULT
-    num_vehicles: 1
-    capacity: 64`)}<p><strong>Required in practice:</strong> a unique <code>info.identifier</code>, a visible <code>info.name</code>, <code>stats.vehicle_type</code>, one profile, and artwork in the expected location. The other statistics make the generated vehicle useful and should normally be supplied.</p><h2>More complete example</h2><p>This example shows profiles, profile overrides, restricted liveries, a standalone sheet, and the common descriptive fields. It is a reference shape, not something to copy unchanged.</p>${code(`info:
+  introduction_date: 1956-01-01`)}<p><strong>Required in practice:</strong> a unique <code>info.identifier</code>, a visible <code>info.name</code>, <code>stats.vehicle_type</code>, and artwork in the expected location. If <code>profiles</code> is omitted or empty, BRBuild supplies an implicit <code>DEFAULT</code> profile with no additional modifiers. Add explicit profiles only when you need named formations, roles, or overrides. The other statistics make the generated vehicle useful and should normally be supplied.</p><h2>More complete example</h2><p>This example shows profiles, profile overrides, restricted liveries, a standalone sheet, and the common descriptive fields. It is a reference shape, not something to copy unchanged.</p>${code(`info:
   identifier: br_mk3
   name: "Mk3 Coach"
   sub_name: "Passenger coach"
