@@ -18,7 +18,7 @@
       <div class="landing-copy"><div class="eyebrow">OpenTTD NewGRFs</div><h1><span class="hero-light">The </span><span class="hero-red">BRTrains</span><span class="hero-light"> family</span></h1><p class="lead">Explore the trains, trams and liveries that make up the BRTrains group of NewGRFs for OpenTTD.</p></div>
       <div class="section-label"><span>Projects</span><span class="section-line"></span></div>
       <div id="project-grid" class="project-grid"><div class="loading-card">Loading projects…</div></div>
-      <div class="landing-maintainer"><div><strong>Maintainer documentation</strong><p>Learn how to structure a BRBuild project, vehicle YAML, and sprite artwork.</p></div><a id="front-maintainer-link" href="#/project/BRTrains3/maintainer">Open the maintainer guide →</a></div>
+      <div class="landing-maintainer"><div><strong>Maintainer documentation</strong><p>Learn how to structure a BRBuild project, vehicle YAML, and sprite artwork.</p></div><a id="front-maintainer-link" href="#/maintainer/overview">Open the maintainer guide →</a></div>
     </section>
     <section id="project-docs" class="docs-view view hidden">
       <aside class="docs-nav">
@@ -31,9 +31,27 @@
           <button class="nav-link" data-section="liveries" type="button"><span>Liveries</span><small id="nav-livery-count"></small></button>
           <button class="nav-link" data-section="about" type="button"><span>Using the GRF</span></button>
         </nav>
-        <div class="nav-footer"><a class="nav-link" data-section="maintainer" href="#/project/BRTrains3/maintainer"><span>Maintainer docs</span><small>YAML &amp; artwork</small></a><div class="admin-area"><button id="admin-toggle" class="admin-toggle" type="button" aria-label="Maintainer login">•••</button><form id="admin-login" class="admin-login hidden"><input id="admin-password" type="password" autocomplete="current-password" placeholder="Password"><button type="submit">Log in</button><button id="admin-logout" type="button" class="hidden">Log out</button><span id="admin-status" role="status"></span></form></div></div>
+        <div class="nav-footer"><a class="nav-link" href="#/maintainer/overview"><span>Maintainer docs</span><small>YAML &amp; artwork</small></a><div class="admin-area"><button id="admin-toggle" class="admin-toggle" type="button" aria-label="Maintainer login">•••</button><form id="admin-login" class="admin-login hidden"><input id="admin-password" type="password" autocomplete="current-password" placeholder="Password"><button type="submit">Log in</button><button id="admin-logout" type="button" class="hidden">Log out</button><span id="admin-status" role="status"></span></form></div></div>
       </aside>
       <main class="docs-main"><div class="docs-topline"><span>BRTrains / <strong id="docs-project-label">Project</strong></span></div><div id="docs-content"></div></main>
+    </section>
+    <section id="maintainer-docs" class="docs-view view hidden">
+      <aside class="docs-nav maintainer-nav">
+        <a class="back-link" href="#/">← Projects</a>
+        <div class="project-nav-title"><span class="mini-roundel">BR</span><div><strong>Maintainer docs</strong><small>BRBuild projects</small></div></div>
+        <div class="nav-label">Guide</div>
+        <nav id="maintainer-nav" aria-label="Maintainer documentation pages">
+          <a class="nav-link" data-maintainer-page="overview" href="#/maintainer/overview"><span>Overview</span></a>
+          <a class="nav-link" data-maintainer-page="project-layout" href="#/maintainer/project-layout"><span>Project layout</span></a>
+          <a class="nav-link" data-maintainer-page="brbuild-yaml" href="#/maintainer/brbuild-yaml"><span>BRBuild.yaml</span></a>
+          <a class="nav-link" data-maintainer-page="grf-yaml" href="#/maintainer/grf-yaml"><span>GRF.yaml</span></a>
+          <a class="nav-link" data-maintainer-page="vehicle-yaml" href="#/maintainer/vehicle-yaml"><span>Vehicle YAML</span></a>
+          <a class="nav-link" data-maintainer-page="sprites" href="#/maintainer/sprites"><span>Sprites &amp; artwork</span></a>
+          <a class="nav-link" data-maintainer-page="advanced" href="#/maintainer/advanced"><span>Advanced files</span></a>
+          <a class="nav-link" data-maintainer-page="build-checklist" href="#/maintainer/build-checklist"><span>Build checklist</span></a>
+        </nav>
+      </aside>
+      <main class="docs-main"><div class="docs-topline"><span>BRTrains / <strong>Maintainer documentation</strong></span></div><div id="maintainer-content"></div></main>
     </section>
   </div>
   <script src="maintainer-docs.js" defer></script>
