@@ -19,6 +19,7 @@
   const basecostLabels = Object.fromEntries(Object.values(basecostGroups).flat().map(key=>[key,key.replace(/^PR_/,'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())]));
   const form = `
     <section class="cost-model-card">
+      <div class="cost-model-main">
       <div class="cost-model-form">
         <div class="cost-model-field"><label for="cost-train-type">Vehicle type</label><select id="cost-train-type"><option value="locomotive">Locomotive</option><option value="multiple_unit">Multiple unit</option><option value="coach">Coach</option><option value="wagon">Freight wagon</option></select></div>
         <div id="cost-fuel-field" class="cost-model-field"><label for="cost-fuel">Fuel / power type</label><select id="cost-fuel">${Object.keys(fuel).filter(key => key !== 'unpowered').map(key => `<option value="${key}"${key === 'diesel' ? ' selected' : ''}>${key.replace('-', ' ')}</option>`).join('')}</select></div>
@@ -28,6 +29,9 @@
         <div id="cost-capacity-field" class="cost-model-field"><label for="cost-capacity">Capacity <output id="cost-capacity-value">80</output></label><input id="cost-capacity" type="number" min="0" max="120" value="80"></div>
         <div id="cost-vehicles-field" class="cost-model-field hidden"><label for="cost-vehicles">Formation cars <output id="cost-vehicles-value">1</output></label><input id="cost-vehicles" type="number" min="1" max="32" value="1"></div>
       </div>
+      <div id="cost-model-output" class="cost-model-output" aria-live="polite"></div>
+      </div>
+      <aside class="cost-model-sidebar">
       <div class="cost-model-controls">
         <label for="cost-runtime-multiplier">Runtime cost parameter <output id="cost-runtime-value">1x</output></label>
         <input id="cost-runtime-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-runtime-notches">
@@ -41,7 +45,7 @@
         <div id="cost-basecost-list" class="cost-model-base-list"></div>
         <div id="cost-adjusted-bases" class="cost-adjusted-bases"></div>
       </div>
-      <div id="cost-model-output" class="cost-model-output" aria-live="polite"></div>
+      </aside>
     </section>
     <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. The maximum is normally fixed at 16,000 in BRBuild; the slider is provided for calibration experiments.</p>`;
   const page = {title:'Cost model calculator', intro:'Enter representative vehicle data and see the generated purchase and running-cost callback values.', body:`<p>Use this tool to sanity-check the relative position of wagons, coaches, locomotives and multiple units before changing BRBuild’s constants. The callback values are the factors emitted to NewGRF; the pound figures use OpenTTD’s no-inflation base prices.</p>${form}`};
