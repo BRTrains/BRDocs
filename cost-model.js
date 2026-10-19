@@ -24,7 +24,7 @@
         <div id="cost-wagon-field" class="cost-model-field hidden"><label for="cost-wagon">Unpowered stock type</label><select id="cost-wagon">${Object.keys(wagon).map(key => `<option value="${key}">${key}</option>`).join('')}</select></div>
         <div class="cost-model-field"><label for="cost-speed">Speed <output id="cost-speed-value">100</output> mph</label><input id="cost-speed" type="number" min="1" max="200" value="100"></div>
         <div id="cost-power-field" class="cost-model-field"><label for="cost-power">Power <output id="cost-power-value">2000</output> hp</label><input id="cost-power" type="number" min="0" max="21000" value="2000"></div>
-        <div class="cost-model-field"><label for="cost-capacity">Capacity <output id="cost-capacity-value">80</output></label><input id="cost-capacity" type="number" min="0" max="120" value="80"></div>
+        <div id="cost-capacity-field" class="cost-model-field"><label for="cost-capacity">Capacity <output id="cost-capacity-value">80</output></label><input id="cost-capacity" type="number" min="0" max="120" value="80"></div>
         <div id="cost-vehicles-field" class="cost-model-field hidden"><label for="cost-vehicles">Formation cars <output id="cost-vehicles-value">1</output></label><input id="cost-vehicles" type="number" min="1" max="32" value="1"></div>
       </div>
       <div class="cost-model-controls">
@@ -38,6 +38,7 @@
         <h3>NML base-cost exponents</h3>
         <p>These are the base-cost entries relevant to BRTrains vehicles. Exponents apply <code>base × 2<sup>exponent</sup></code>; the entries relevant to the current vehicle and power type are highlighted.</p>
         <div id="cost-basecost-list" class="cost-model-base-list"></div>
+        <div id="cost-adjusted-bases" class="cost-adjusted-bases"></div>
       </div>
       <div id="cost-model-output" class="cost-model-output" aria-live="polite"></div>
     </section>
@@ -74,11 +75,12 @@
       get('cost-fuel-field').classList.toggle('hidden', !powered);
       get('cost-wagon-field').classList.toggle('hidden', powered);
       get('cost-power-field').classList.toggle('hidden', !powered);
+      get('cost-capacity-field').classList.toggle('hidden', type === 'locomotive');
       get('cost-vehicles-field').classList.toggle('hidden', !multipleUnit);
       if (!powered) get('cost-fuel').value = 'diesel';
       const speed = Math.max(1, number('cost-speed'));
       const power = powered ? Math.max(0, number('cost-power')) : 0;
-      const capacity = Math.max(0, number('cost-capacity'));
+      const capacity = type === 'locomotive' ? 0 : Math.max(0, number('cost-capacity'));
       const vehicles = multipleUnit ? Math.max(1, number('cost-vehicles')) : 1;
       const max = number('cost-score-max') || 16000;
       const runtime = Number(get('cost-runtime-multiplier').value);
@@ -116,7 +118,8 @@
       root.querySelector('#cost-vehicles-value').textContent = vehicles;
       root.querySelector('#cost-runtime-value').textContent = runtimeLabel(runtime);
       root.querySelector('#cost-score-max-value').textContent = max.toLocaleString('en-GB');
-      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Unscaled score</span><strong>${Math.round(base).toLocaleString('en-GB')}</strong></div><div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Adjusted bases</span><strong>${money(purchaseBase)} / ${money(runningBase)}</strong><small>Purchase / running base after exponent adjustment</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
+      root.querySelector('#cost-adjusted-bases').innerHTML = `<strong>Adjusted bases</strong><span>${money(purchaseBase)} purchase · ${money(runningBase)} running</span>`;
+      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Unscaled score</span><strong>${Math.round(base).toLocaleString('en-GB')}</strong><small>Before the runtime cost parameter</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
     root.querySelectorAll('select').forEach(input => input.addEventListener('change', update));
