@@ -107,7 +107,7 @@
       else if (type === 'multiple_unit') base = 20 / vehicles + 90 + 15 * speedPart + 35 * powerPart + 10 * capacityPart;
       else base = 180 + 80 * powerPart + 40 * speedPart;
       const [purchaseFuel, runningFuel] = fuel[get('cost-fuel').value];
-      const [purchaseWagon, runningWagon] = wagon[get('cost-wagon').value];
+      const [purchaseWagon, runningWagon] = powered ? [1, 1] : wagon[get('cost-wagon').value];
       const purchase = base * purchaseFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : purchaseWagon);
       const running = base * runningFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : runningWagon);
       const purchaseCallback = Math.min(max, Math.round(purchase)) * runtime;
