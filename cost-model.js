@@ -90,6 +90,7 @@
       get('cost-power-field').classList.toggle('hidden', !powered);
       get('cost-capacity-field').classList.toggle('hidden', type === 'locomotive');
       get('cost-vehicles-field').classList.toggle('hidden', !multipleUnit);
+      get('cost-capacity').max = multipleUnit ? 1500 : 250;
       if (!powered) get('cost-fuel').value = 'diesel';
       const speed = Math.max(1, number('cost-speed'));
       const power = powered ? Math.max(0, number('cost-power')) : 0;
@@ -102,14 +103,14 @@
       const steamRunningBase = 5600 * (2 ** baseExponent('PR_RUNNING_TRAIN_STEAM'));
       const dieselRunningBase = 5200 * (2 ** baseExponent('PR_RUNNING_TRAIN_DIESEL'));
       const electricRunningBase = 4800 * (2 ** baseExponent('PR_RUNNING_TRAIN_ELECTRIC'));
-      const speedPart = Math.min(1, Math.max(0, speed / 200));
+      const speedPart = Math.min(1, Math.max(0, speed / 250));
       const powerPart = Math.min(1, Math.max(0, power / 21000));
-      const capacityPart = Math.min(1, Math.max(0, capacity / 120));
+      const capacityPart = Math.min(1, Math.max(0, capacity / (multipleUnit ? 1500 : 250)));
       let base;
-      if (type === 'wagon') base = 4200 * (1 + .25 * speedPart + .50 * capacityPart);
-      else if (type === 'coach') base = 3300 * (1 + .25 * speedPart + .50 * capacityPart);
-      else if (type === 'multiple_unit') base = 20 / vehicles + 90 + 15 * speedPart + 35 * powerPart + 10 * capacityPart;
-      else base = 180 + 80 * powerPart + 40 * speedPart;
+      if (type === 'wagon') base = 16000 * (.65 * capacityPart + .35 * speedPart);
+      else if (type === 'coach') base = 16000 * (.65 * capacityPart + .35 * speedPart);
+      else if (type === 'multiple_unit') base = 16000 * (.40 * powerPart + .30 * capacityPart + .25 * speedPart + .05 / Math.min(vehicles, 16));
+      else base = 16000 * (.65 * powerPart + .35 * speedPart);
       const [purchaseFuel, runningFuel] = fuel[get('cost-fuel').value];
       const [purchaseWagon, runningWagon] = powered ? [1, 1] : wagon[get('cost-wagon').value];
       const purchase = base * purchaseFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : purchaseWagon);
