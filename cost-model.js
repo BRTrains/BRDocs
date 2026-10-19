@@ -20,13 +20,12 @@
     <section class="cost-model-card">
       <div class="cost-model-form">
         <div class="cost-model-field"><label for="cost-train-type">Vehicle type</label><select id="cost-train-type"><option value="locomotive">Locomotive</option><option value="multiple_unit">Multiple unit</option><option value="coach">Coach</option><option value="wagon">Freight wagon</option></select></div>
+        <div id="cost-fuel-field" class="cost-model-field"><label for="cost-fuel">Fuel / power type</label><select id="cost-fuel">${Object.keys(fuel).filter(key => key !== 'unpowered').map(key => `<option value="${key}"${key === 'diesel' ? ' selected' : ''}>${key.replace('-', ' ')}</option>`).join('')}</select></div>
+        <div id="cost-wagon-field" class="cost-model-field hidden"><label for="cost-wagon">Unpowered stock type</label><select id="cost-wagon">${Object.keys(wagon).map(key => `<option value="${key}">${key}</option>`).join('')}</select></div>
         <div class="cost-model-field"><label for="cost-speed">Speed <output id="cost-speed-value">100</output> mph</label><input id="cost-speed" type="number" min="1" max="200" value="100"></div>
-        <div class="cost-model-field"><label for="cost-power">Power <output id="cost-power-value">2000</output> hp</label><input id="cost-power" type="number" min="0" max="21000" value="2000"></div>
+        <div id="cost-power-field" class="cost-model-field"><label for="cost-power">Power <output id="cost-power-value">2000</output> hp</label><input id="cost-power" type="number" min="0" max="21000" value="2000"></div>
         <div class="cost-model-field"><label for="cost-capacity">Capacity <output id="cost-capacity-value">80</output></label><input id="cost-capacity" type="number" min="0" max="120" value="80"></div>
-        <div class="cost-model-field"><label for="cost-size">Size <output id="cost-size-value">1</output></label><input id="cost-size" type="number" min="1" max="8" value="1"></div>
-        <div class="cost-model-field"><label for="cost-vehicles">Formation cars <output id="cost-vehicles-value">1</output></label><input id="cost-vehicles" type="number" min="1" max="32" value="1"></div>
-        <div class="cost-model-field"><label for="cost-fuel">Fuel / power type</label><select id="cost-fuel">${Object.keys(fuel).map(key => `<option value="${key}">${key.replace('-', ' ')}</option>`).join('')}</select></div>
-        <div class="cost-model-field"><label for="cost-wagon">Unpowered stock type</label><select id="cost-wagon">${Object.keys(wagon).map(key => `<option value="${key}">${key}</option>`).join('')}</select></div>
+        <div id="cost-vehicles-field" class="cost-model-field hidden"><label for="cost-vehicles">Formation cars <output id="cost-vehicles-value">1</output></label><input id="cost-vehicles" type="number" min="1" max="32" value="1"></div>
       </div>
       <div class="cost-model-controls">
         <label for="cost-runtime-multiplier">Runtime cost parameter <output id="cost-runtime-value">1x</output></label>
@@ -70,11 +69,17 @@
     };
     const update = () => {
       const type = get('cost-train-type').value;
+      const powered = type === 'locomotive' || type === 'multiple_unit';
+      const multipleUnit = type === 'multiple_unit';
+      get('cost-fuel-field').classList.toggle('hidden', !powered);
+      get('cost-wagon-field').classList.toggle('hidden', powered);
+      get('cost-power-field').classList.toggle('hidden', !powered);
+      get('cost-vehicles-field').classList.toggle('hidden', !multipleUnit);
+      if (!powered) get('cost-fuel').value = 'diesel';
       const speed = Math.max(1, number('cost-speed'));
-      const power = Math.max(0, number('cost-power'));
+      const power = powered ? Math.max(0, number('cost-power')) : 0;
       const capacity = Math.max(0, number('cost-capacity'));
-      const size = Math.max(1, number('cost-size'));
-      const vehicles = Math.max(1, number('cost-vehicles'));
+      const vehicles = multipleUnit ? Math.max(1, number('cost-vehicles')) : 1;
       const max = number('cost-score-max') || 16000;
       const runtime = Number(get('cost-runtime-multiplier').value);
       const powerPurchaseBase = 400000 * (2 ** baseExponent('PR_BUILD_VEHICLE_TRAIN'));
@@ -85,23 +90,21 @@
       const speedPart = Math.min(1, Math.max(0, speed / 200));
       const powerPart = Math.min(1, Math.max(0, power / 21000));
       const capacityPart = Math.min(1, Math.max(0, capacity / 120));
-      const sizePart = Math.min(1, Math.max(0, size / 8));
       let base;
-      if (type === 'wagon') base = 4200 * (1 + .25 * speedPart + .50 * capacityPart + .15 * sizePart);
-      else if (type === 'coach') base = 3300 * (1 + .25 * speedPart + .50 * capacityPart + .10 * sizePart);
+      if (type === 'wagon') base = 4200 * (1 + .25 * speedPart + .50 * capacityPart);
+      else if (type === 'coach') base = 3300 * (1 + .25 * speedPart + .50 * capacityPart);
       else if (type === 'multiple_unit') base = 20 / vehicles + 90 + 15 * speedPart + 35 * powerPart + 10 * capacityPart;
-      else base = 180 + 80 * powerPart + 40 * speedPart + 10 * sizePart;
+      else base = 180 + 80 * powerPart + 40 * speedPart;
       const [purchaseFuel, runningFuel] = fuel[get('cost-fuel').value];
       const [purchaseWagon, runningWagon] = wagon[get('cost-wagon').value];
       const purchase = base * purchaseFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : purchaseWagon);
       const running = base * runningFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : runningWagon);
       const purchaseCallback = Math.min(max, Math.round(purchase)) * runtime;
       const runningCallback = Math.min(max, Math.round(running)) * runtime;
-      const powered = type === 'locomotive' || type === 'multiple_unit';
       const purchaseBase = powered ? powerPurchaseBase : wagonPurchaseBase;
       const runningFuelName = get('cost-fuel').value;
       const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery' ? electricRunningBase : dieselRunningBase;
-      const formation = type === 'multiple_unit' ? vehicles : 1;
+      const formation = multipleUnit ? vehicles : 1;
       const highlighted = new Set([powered ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON']);
       if (runningFuelName === 'steam') highlighted.add('PR_RUNNING_TRAIN_STEAM');
       else if (runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery') highlighted.add('PR_RUNNING_TRAIN_ELECTRIC');
@@ -110,7 +113,6 @@
       root.querySelector('#cost-speed-value').textContent = speed;
       root.querySelector('#cost-power-value').textContent = power.toLocaleString('en-GB');
       root.querySelector('#cost-capacity-value').textContent = capacity;
-      root.querySelector('#cost-size-value').textContent = size;
       root.querySelector('#cost-vehicles-value').textContent = vehicles;
       root.querySelector('#cost-runtime-value').textContent = runtimeLabel(runtime);
       root.querySelector('#cost-score-max-value').textContent = max.toLocaleString('en-GB');
