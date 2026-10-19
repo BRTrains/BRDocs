@@ -23,8 +23,9 @@
         <div class="cost-model-field"><label for="cost-wagon">Unpowered stock type</label><select id="cost-wagon">${Object.keys(wagon).map(key => `<option value="${key}">${key}</option>`).join('')}</select></div>
       </div>
       <div class="cost-model-controls">
-        <label for="cost-runtime-multiplier">Runtime multiplier <output id="cost-runtime-value">1.00×</output></label>
-        <input id="cost-runtime-multiplier" type="range" min="0.25" max="4" step="0.01" value="1">
+        <label for="cost-runtime-multiplier">Runtime cost parameter <output id="cost-runtime-value">1x</output></label>
+        <input id="cost-runtime-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-runtime-notches">
+        <datalist id="cost-runtime-notches"><option value="0.25" label="1/4"></option><option value="0.333333" label="1/3"></option><option value="0.5" label="1/2"></option><option value="1" label="1x"></option><option value="2" label="2x"></option><option value="3" label="3x"></option><option value="4" label="4x"></option></datalist>
         <label for="cost-score-max">Score maximum <output id="cost-score-max-value">16,000</output></label>
         <input id="cost-score-max" type="range" min="1000" max="16000" step="100" value="16000">
       </div>
@@ -51,6 +52,12 @@
     const get = id => root.querySelector(`#${id}`);
     const number = id => Number(get(id).value) || 0;
     const money = value => `£${Math.round(value).toLocaleString('en-GB')}`;
+    const runtimeNotches = [.25, 1 / 3, .5, 1, 2, 3, 4];
+    const runtimeLabel = value => {
+      const labels = ['1/4', '1/3', '1/2', '1x', '2x', '3x', '4x'];
+      const index = runtimeNotches.reduce((best, notch, current) => Math.abs(notch - value) < Math.abs(runtimeNotches[best] - value) ? current : best, 0);
+      return labels[index];
+    };
     const update = () => {
       const type = get('cost-train-type').value;
       const speed = Math.max(1, number('cost-speed'));
@@ -90,13 +97,19 @@
       root.querySelector('#cost-capacity-value').textContent = capacity;
       root.querySelector('#cost-size-value').textContent = size;
       root.querySelector('#cost-vehicles-value').textContent = vehicles;
-      root.querySelector('#cost-runtime-value').textContent = `${runtime.toFixed(2)}×`;
+      root.querySelector('#cost-runtime-value').textContent = runtimeLabel(runtime);
       root.querySelector('#cost-score-max-value').textContent = max.toLocaleString('en-GB');
       ['cost-train-base-exp','cost-wagon-base-exp','cost-steam-running-exp','cost-diesel-running-exp'].forEach(id => { const value=exponent(id); root.querySelector(`#${id}-value`).textContent=value>0?`+${value}`:`${value}`; });
       root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Unscaled score</span><strong>${Math.round(base).toLocaleString('en-GB')}</strong></div><div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Adjusted bases</span><strong>${money(purchaseBase)} / ${money(runningBase)}</strong><small>Purchase / running base after exponent adjustment</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
     root.querySelectorAll('select').forEach(input => input.addEventListener('change', update));
+    get('cost-runtime-multiplier').addEventListener('input', event => {
+      const value = Number(event.target.value);
+      const nearest = runtimeNotches.reduce((best, notch) => Math.abs(notch - value) < Math.abs(best - value) ? notch : best, runtimeNotches[0]);
+      event.target.value = nearest;
+      update();
+    });
     update();
   };
 })();
