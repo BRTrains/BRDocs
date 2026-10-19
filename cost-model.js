@@ -28,6 +28,16 @@
         <label for="cost-score-max">Score maximum <output id="cost-score-max-value">16,000</output></label>
         <input id="cost-score-max" type="range" min="1000" max="16000" step="100" value="16000">
       </div>
+      <div class="cost-model-basecosts">
+        <h3>OpenTTD base-cost exponents</h3>
+        <p>Each exponent applies the NML base-cost adjustment <code>base × 2<sup>exponent</sup></code>.</p>
+        <div class="cost-model-base-grid">
+          <label>Powered purchase <output id="cost-train-base-exp-value">−2</output><input id="cost-train-base-exp" type="range" min="-8" max="4" step="1" value="-2"></label>
+          <label>Wagon purchase <output id="cost-wagon-base-exp-value">+1</output><input id="cost-wagon-base-exp" type="range" min="-8" max="4" step="1" value="1"></label>
+          <label>Steam running <output id="cost-steam-running-exp-value">−2</output><input id="cost-steam-running-exp" type="range" min="-8" max="4" step="1" value="-2"></label>
+          <label>Diesel running <output id="cost-diesel-running-exp-value">−4</output><input id="cost-diesel-running-exp" type="range" min="-8" max="4" step="1" value="-4"></label>
+        </div>
+      </div>
       <div id="cost-model-output" class="cost-model-output" aria-live="polite"></div>
     </section>
     <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. The maximum is normally fixed at 16,000 in BRBuild; the slider is provided for calibration experiments.</p>`;
@@ -50,6 +60,11 @@
       const vehicles = Math.max(1, number('cost-vehicles'));
       const max = number('cost-score-max') || 16000;
       const runtime = Number(get('cost-runtime-multiplier').value);
+      const exponent = id => Number(get(id).value);
+      const powerPurchaseBase = 400000 * (2 ** exponent('cost-train-base-exp'));
+      const wagonPurchaseBase = 2000 * (2 ** exponent('cost-wagon-base-exp'));
+      const steamRunningBase = 5600 * (2 ** exponent('cost-steam-running-exp'));
+      const dieselRunningBase = 5200 * (2 ** exponent('cost-diesel-running-exp'));
       const speedPart = Math.min(1, Math.max(0, speed / 200));
       const powerPart = Math.min(1, Math.max(0, power / 21000));
       const capacityPart = Math.min(1, Math.max(0, capacity / 120));
@@ -65,7 +80,10 @@
       const running = base * runningFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : runningWagon);
       const purchaseCallback = Math.min(max, Math.round(purchase)) * runtime;
       const runningCallback = Math.min(max, Math.round(running)) * runtime;
-      const priceBase = type === 'locomotive' || type === 'multiple_unit' ? 400000 : 2000;
+      const powered = type === 'locomotive' || type === 'multiple_unit';
+      const purchaseBase = powered ? powerPurchaseBase : wagonPurchaseBase;
+      const runningFuelName = get('cost-fuel').value;
+      const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'diesel' || runningFuelName === 'unpowered' ? dieselRunningBase : 4800;
       const formation = type === 'multiple_unit' ? vehicles : 1;
       root.querySelector('#cost-speed-value').textContent = speed;
       root.querySelector('#cost-power-value').textContent = power.toLocaleString('en-GB');
@@ -74,7 +92,8 @@
       root.querySelector('#cost-vehicles-value').textContent = vehicles;
       root.querySelector('#cost-runtime-value').textContent = `${runtime.toFixed(2)}×`;
       root.querySelector('#cost-score-max-value').textContent = max.toLocaleString('en-GB');
-      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Unscaled score</span><strong>${Math.round(base).toLocaleString('en-GB')}</strong></div><div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(priceBase * purchaseCallback / 256)} per vehicle · ${money(priceBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(priceBase * runningCallback / 256)} per vehicle · ${money(priceBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
+      ['cost-train-base-exp','cost-wagon-base-exp','cost-steam-running-exp','cost-diesel-running-exp'].forEach(id => { const value=exponent(id); root.querySelector(`#${id}-value`).textContent=value>0?`+${value}`:`${value}`; });
+      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Unscaled score</span><strong>${Math.round(base).toLocaleString('en-GB')}</strong></div><div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Adjusted bases</span><strong>${money(purchaseBase)} / ${money(runningBase)}</strong><small>Purchase / running base after exponent adjustment</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
     root.querySelectorAll('select').forEach(input => input.addEventListener('change', update));
