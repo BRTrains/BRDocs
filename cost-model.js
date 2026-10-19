@@ -69,7 +69,7 @@
       <div class="cost-model-basecosts">
         <h3>NML base-cost exponents</h3>
         <div id="cost-basecost-list" class="cost-model-base-list"></div>
-        <datalist id="cost-basecost-notches"><option value="-8" label="−8"></option><option value="-4" label="−4"></option><option value="-2" label="−2"></option><option value="-1" label="−1"></option><option value="0" label="0"></option><option value="1" label="+1"></option><option value="2" label="+2"></option><option value="4" label="+4"></option><option value="8" label="+8"></option><option value="16" label="+16"></option></datalist>
+        <datalist id="cost-basecost-notches"><option value="-8" label="−8"></option><option value="-7"></option><option value="-6"></option><option value="-5"></option><option value="-4" label="−4"></option><option value="-3"></option><option value="-2" label="−2"></option><option value="-1" label="−1"></option><option value="0" label="0"></option><option value="1" label="+1"></option><option value="2" label="+2"></option><option value="3"></option><option value="4" label="+4"></option><option value="5"></option><option value="6"></option><option value="7"></option><option value="8" label="+8"></option><option value="9"></option><option value="10"></option><option value="11"></option><option value="12"></option><option value="13"></option><option value="14"></option><option value="15"></option><option value="16" label="+16"></option></datalist>
         <div id="cost-adjusted-bases" class="cost-adjusted-bases"></div>
       </div>
       </aside>
@@ -87,6 +87,7 @@
     list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="16" step="1" list="cost-basecost-notches" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
     const baseExponent = key => Number(root.querySelector(`[data-basecost="${key}"]`).value);
     root.querySelectorAll('[data-basecost]').forEach(input => input.addEventListener('input', () => {
+      input.value = Math.max(-8, Math.min(16, Math.round(Number(input.value))));
       const value = Number(input.value);
       const output = root.querySelector(`[data-basecost-output="${input.dataset.basecost}"]`);
       output.textContent = value > 0 ? `+${value}` : value;
