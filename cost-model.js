@@ -23,7 +23,7 @@
     ['Class 376',{type:'multiple_unit',speed:75,power:2682,capacity:60,vehicles:5,fuel:'electric'}],
     ['APT-E',{type:'multiple_unit',speed:140,power:2700,capacity:37,vehicles:4,fuel:'gas-turbine'}],
     ['APT-P',{type:'multiple_unit',speed:125,power:8000,capacity:52,vehicles:14,fuel:'electric'}],
-    ['Class 373 Eurostar',{type:'multiple_unit',speed:186,power:16400,capacity:105,vehicles:20,fuel:'electric'}],
+    ['Class 158',{type:'multiple_unit',speed:90,power:700,capacity:69,vehicles:2,fuel:'diesel'}],
     ['Class 374 Eurostar',{type:'multiple_unit',speed:199,power:21000,capacity:40,vehicles:16,fuel:'electric'}],
     ['Class 555',{type:'multiple_unit',speed:50,power:1770,capacity:120,vehicles:5,fuel:'electric'}],
     ['LU 2024 Stock',{type:'multiple_unit',speed:62,power:3400,capacity:119,vehicles:9,fuel:'electric'}],
