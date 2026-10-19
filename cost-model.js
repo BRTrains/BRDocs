@@ -10,6 +10,12 @@
     sleeper: [.70, .35], dvt: [.75, .40]
   };
   const names = {locomotive:'Locomotive', multiple_unit:'Multiple unit', coach:'Coach', wagon:'Freight wagon'};
+  const basecostGroups = {
+    'Purchase': ['PR_BUILD_VEHICLE_TRAIN', 'PR_BUILD_VEHICLE_WAGON'],
+    'Running': ['PR_RUNNING_TRAIN_STEAM', 'PR_RUNNING_TRAIN_DIESEL']
+  };
+  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:-2,PR_BUILD_VEHICLE_WAGON:1,PR_RUNNING_TRAIN_STEAM:-2,PR_RUNNING_TRAIN_DIESEL:-4};
+  const basecostLabels = Object.fromEntries(Object.values(basecostGroups).flat().map(key=>[key,key.replace(/^PR_/,'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())]));
   const form = `
     <section class="cost-model-card">
       <div class="cost-model-form">
@@ -30,14 +36,9 @@
         <input id="cost-score-max" type="range" min="1000" max="16000" step="100" value="16000">
       </div>
       <div class="cost-model-basecosts">
-        <h3>OpenTTD base-cost exponents</h3>
-        <p>Each exponent applies the NML base-cost adjustment <code>base × 2<sup>exponent</sup></code>.</p>
-        <div class="cost-model-base-grid">
-          <label>Powered purchase <output id="cost-train-base-exp-value">−2</output><input id="cost-train-base-exp" type="range" min="-8" max="4" step="1" value="-2"></label>
-          <label>Wagon purchase <output id="cost-wagon-base-exp-value">+1</output><input id="cost-wagon-base-exp" type="range" min="-8" max="4" step="1" value="1"></label>
-          <label>Steam running <output id="cost-steam-running-exp-value">−2</output><input id="cost-steam-running-exp" type="range" min="-8" max="4" step="1" value="-2"></label>
-          <label>Diesel running <output id="cost-diesel-running-exp-value">−4</output><input id="cost-diesel-running-exp" type="range" min="-8" max="4" step="1" value="-4"></label>
-        </div>
+        <h3>NML base-cost exponents</h3>
+        <p>These are the base-cost entries relevant to BRTrains vehicles. Exponents apply <code>base × 2<sup>exponent</sup></code>; the entries relevant to the current vehicle and power type are highlighted.</p>
+        <div id="cost-basecost-list" class="cost-model-base-list"></div>
       </div>
       <div id="cost-model-output" class="cost-model-output" aria-live="polite"></div>
     </section>
@@ -50,6 +51,15 @@
     if (!root || root.dataset.bound) return;
     root.dataset.bound = 'true';
     const get = id => root.querySelector(`#${id}`);
+    const list = get('cost-basecost-list');
+    list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="4" step="1" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
+    const baseExponent = key => Number(root.querySelector(`[data-basecost="${key}"]`).value);
+    root.querySelectorAll('[data-basecost]').forEach(input => input.addEventListener('input', () => {
+      const value = Number(input.value);
+      const output = root.querySelector(`[data-basecost-output="${input.dataset.basecost}"]`);
+      output.textContent = value > 0 ? `+${value}` : value;
+      update();
+    }));
     const number = id => Number(get(id).value) || 0;
     const money = value => `£${Math.round(value).toLocaleString('en-GB')}`;
     const runtimeNotches = [.25, 1 / 3, .5, 1, 2, 3, 4];
@@ -67,11 +77,10 @@
       const vehicles = Math.max(1, number('cost-vehicles'));
       const max = number('cost-score-max') || 16000;
       const runtime = Number(get('cost-runtime-multiplier').value);
-      const exponent = id => Number(get(id).value);
-      const powerPurchaseBase = 400000 * (2 ** exponent('cost-train-base-exp'));
-      const wagonPurchaseBase = 2000 * (2 ** exponent('cost-wagon-base-exp'));
-      const steamRunningBase = 5600 * (2 ** exponent('cost-steam-running-exp'));
-      const dieselRunningBase = 5200 * (2 ** exponent('cost-diesel-running-exp'));
+      const powerPurchaseBase = 400000 * (2 ** baseExponent('PR_BUILD_VEHICLE_TRAIN'));
+      const wagonPurchaseBase = 2000 * (2 ** baseExponent('PR_BUILD_VEHICLE_WAGON'));
+      const steamRunningBase = 5600 * (2 ** baseExponent('PR_RUNNING_TRAIN_STEAM'));
+      const dieselRunningBase = 5200 * (2 ** baseExponent('PR_RUNNING_TRAIN_DIESEL'));
       const speedPart = Math.min(1, Math.max(0, speed / 200));
       const powerPart = Math.min(1, Math.max(0, power / 21000));
       const capacityPart = Math.min(1, Math.max(0, capacity / 120));
@@ -92,6 +101,11 @@
       const runningFuelName = get('cost-fuel').value;
       const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'diesel' || runningFuelName === 'unpowered' ? dieselRunningBase : 4800;
       const formation = type === 'multiple_unit' ? vehicles : 1;
+      const highlighted = new Set([powered ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON']);
+      if (runningFuelName === 'steam') highlighted.add('PR_RUNNING_TRAIN_STEAM');
+      else if (runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery') highlighted.add('PR_RUNNING_TRAIN_ELECTRIC');
+      else highlighted.add('PR_RUNNING_TRAIN_DIESEL');
+      root.querySelectorAll('[data-basecost-row]').forEach(row => row.classList.toggle('relevant', highlighted.has(row.dataset.basecostRow)));
       root.querySelector('#cost-speed-value').textContent = speed;
       root.querySelector('#cost-power-value').textContent = power.toLocaleString('en-GB');
       root.querySelector('#cost-capacity-value').textContent = capacity;
@@ -99,7 +113,6 @@
       root.querySelector('#cost-vehicles-value').textContent = vehicles;
       root.querySelector('#cost-runtime-value').textContent = runtimeLabel(runtime);
       root.querySelector('#cost-score-max-value').textContent = max.toLocaleString('en-GB');
-      ['cost-train-base-exp','cost-wagon-base-exp','cost-steam-running-exp','cost-diesel-running-exp'].forEach(id => { const value=exponent(id); root.querySelector(`#${id}-value`).textContent=value>0?`+${value}`:`${value}`; });
       root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Unscaled score</span><strong>${Math.round(base).toLocaleString('en-GB')}</strong></div><div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Adjusted bases</span><strong>${money(purchaseBase)} / ${money(runningBase)}</strong><small>Purchase / running base after exponent adjustment</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
