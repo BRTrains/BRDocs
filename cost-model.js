@@ -13,24 +13,24 @@
   const presets = [
     ['GWR Mink goods van',{type:'wagon',speed:50,capacity:20,wagon:'freight'}],
     ['BR HHA hopper',{type:'wagon',speed:75,capacity:72,wagon:'freight'}],
+    ['Class 555',{type:'multiple_unit',speed:50,power:1770,capacity:120,vehicles:5,fuel:'electric'}],
+    ['Class 456',{type:'multiple_unit',speed:75,power:500,capacity:79,vehicles:2,fuel:'electric'}],
+    ['Class 484',{type:'multiple_unit',speed:45,power:1500,capacity:141,vehicles:2,fuel:'electric'}],
+    ['LU 1996 Stock',{type:'multiple_unit',speed:62,power:2500,capacity:141,vehicles:6,fuel:'electric'}],
+    ['Class 376',{type:'multiple_unit',speed:75,power:2682,capacity:60,vehicles:5,fuel:'electric'}],
+    ['Class 323',{type:'multiple_unit',speed:90,power:1566,capacity:98,vehicles:4,fuel:'electric'}],
+    ['LU 2024 Stock',{type:'multiple_unit',speed:62,power:3400,capacity:119,vehicles:9,fuel:'electric'}],
+    ['Class 158',{type:'multiple_unit',speed:90,power:700,capacity:69,vehicles:2,fuel:'diesel'}],
     ['Mk1 coach',{type:'coach',speed:90,capacity:64,wagon:'coach'}],
     ['Class 37',{type:'locomotive',speed:90,power:1750,fuel:'diesel'}],
-    ['A3 steam locomotive',{type:'locomotive',speed:100,power:1750,fuel:'steam'}],
-    ['Class 43 HST power car',{type:'locomotive',speed:125,power:4500,fuel:'diesel'}],
-    ['Class 91',{type:'locomotive',speed:125,power:6480,fuel:'electric'}],
-    ['Class 456',{type:'multiple_unit',speed:75,power:500,capacity:79,vehicles:2,fuel:'electric'}],
-    ['Class 323',{type:'multiple_unit',speed:90,power:1566,capacity:98,vehicles:4,fuel:'electric'}],
-    ['Class 376',{type:'multiple_unit',speed:75,power:2682,capacity:60,vehicles:5,fuel:'electric'}],
+    ['LU D78 Stock',{type:'multiple_unit',speed:45,power:3000,capacity:535,vehicles:3,fuel:'electric'}],
     ['APT-E',{type:'multiple_unit',speed:140,power:2700,capacity:37,vehicles:4,fuel:'gas-turbine'}],
     ['APT-P',{type:'multiple_unit',speed:125,power:8000,capacity:52,vehicles:14,fuel:'electric'}],
-    ['Class 158',{type:'multiple_unit',speed:90,power:700,capacity:69,vehicles:2,fuel:'diesel'}],
-    ['Class 374 Eurostar',{type:'multiple_unit',speed:199,power:21000,capacity:40,vehicles:16,fuel:'electric'}],
-    ['Class 555',{type:'multiple_unit',speed:50,power:1770,capacity:120,vehicles:5,fuel:'electric'}],
-    ['LU 2024 Stock',{type:'multiple_unit',speed:62,power:3400,capacity:119,vehicles:9,fuel:'electric'}],
     ['LU S Stock',{type:'multiple_unit',speed:60,power:0,capacity:1435,vehicles:7,fuel:'electric'}],
-    ['LU D78 Stock',{type:'multiple_unit',speed:45,power:3000,capacity:535,vehicles:3,fuel:'electric'}],
-    ['Class 484',{type:'multiple_unit',speed:45,power:1500,capacity:141,vehicles:2,fuel:'electric'}],
-    ['LU 1996 Stock',{type:'multiple_unit',speed:62,power:2500,capacity:141,vehicles:6,fuel:'electric'}]
+    ['Class 43 HST power car',{type:'locomotive',speed:125,power:4500,fuel:'diesel'}],
+    ['Class 91',{type:'locomotive',speed:125,power:6480,fuel:'electric'}],
+    ['A3 steam locomotive',{type:'locomotive',speed:100,power:1750,fuel:'steam'}],
+    ['Class 374 Eurostar',{type:'multiple_unit',speed:199,power:21000,capacity:40,vehicles:16,fuel:'electric'}]
   ];
   const names = {locomotive:'Locomotive', multiple_unit:'Multiple unit', coach:'Coach', wagon:'Freight wagon'};
   const basecostGroups = {
