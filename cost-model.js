@@ -56,15 +56,17 @@
       </div>
       <aside class="cost-model-sidebar">
       <div class="cost-model-controls">
-        <label for="cost-runtime-multiplier">Runtime cost parameter <output id="cost-runtime-value">1x</output></label>
-        <input id="cost-runtime-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-runtime-notches">
-        <datalist id="cost-runtime-notches"><option value="0.25" label="1/4"></option><option value="0.333333" label="1/3"></option><option value="0.5" label="1/2"></option><option value="1" label="1x"></option><option value="2" label="2x"></option><option value="3" label="3x"></option><option value="4" label="4x"></option></datalist>
+        <label for="cost-purchase-multiplier">Purchase Cost Multiplier (newGRF Parameter) <output id="cost-purchase-value">1x</output></label>
+        <input id="cost-purchase-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-purchase-notches">
+        <datalist id="cost-purchase-notches"><option value="0.25" label="1/4"></option><option value="0.333333" label="1/3"></option><option value="0.5" label="1/2"></option><option value="1" label="1x"></option><option value="2" label="2x"></option><option value="3" label="3x"></option><option value="4" label="4x"></option></datalist>
+        <label for="cost-running-multiplier">Running Cost Multiplier (newGRF Parameter) <output id="cost-running-value">1x</output></label>
+        <input id="cost-running-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-running-notches">
+        <datalist id="cost-running-notches"><option value="0.25" label="1/4"></option><option value="0.333333" label="1/3"></option><option value="0.5" label="1/2"></option><option value="1" label="1x"></option><option value="2" label="2x"></option><option value="3" label="3x"></option><option value="4" label="4x"></option></datalist>
         <label for="cost-score-max">Score maximum <output id="cost-score-max-value">16,000</output></label>
         <input id="cost-score-max" type="range" min="1000" max="16000" step="100" value="16000">
       </div>
       <div class="cost-model-basecosts">
         <h3>NML base-cost exponents</h3>
-        <p>These are the base-cost entries relevant to BRTrains vehicles. Exponents apply <code>base × 2<sup>exponent</sup></code>; the entries relevant to the current vehicle and power type are highlighted.</p>
         <div id="cost-basecost-list" class="cost-model-base-list"></div>
         <div id="cost-adjusted-bases" class="cost-adjusted-bases"></div>
       </div>
@@ -132,7 +134,8 @@
       const capacity = type === 'locomotive' ? 0 : Math.max(0, number('cost-capacity'));
       const vehicles = multipleUnit ? Math.max(1, number('cost-vehicles')) : 1;
       const scoreMax = number('cost-score-max') || 16000;
-      const runtime = Number(get('cost-runtime-multiplier').value);
+      const purchaseRuntime = Number(get('cost-purchase-multiplier').value);
+      const runningRuntime = Number(get('cost-running-multiplier').value);
       const powerPurchaseBase = 400000 * (2 ** baseExponent('PR_BUILD_VEHICLE_TRAIN'));
       const wagonPurchaseBase = 2000 * (2 ** baseExponent('PR_BUILD_VEHICLE_WAGON'));
       const steamRunningBase = 5600 * (2 ** baseExponent('PR_RUNNING_TRAIN_STEAM'));
@@ -150,8 +153,8 @@
       const [purchaseWagon, runningWagon] = powered ? [1, 1] : wagon[get('cost-wagon').value];
       const purchase = base * purchaseFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : purchaseWagon);
       const running = base * runningFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : runningWagon);
-      const purchaseCallback = Math.min(scoreMax, Math.round(purchase)) * runtime;
-      const runningCallback = Math.min(scoreMax, Math.round(running)) * runtime;
+      const purchaseCallback = Math.min(scoreMax, Math.round(purchase)) * purchaseRuntime;
+      const runningCallback = Math.min(scoreMax, Math.round(running)) * runningRuntime;
       const purchaseBase = powered ? powerPurchaseBase : wagonPurchaseBase;
       const runningFuelName = get('cost-fuel').value;
       const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery' ? electricRunningBase : dieselRunningBase;
@@ -165,19 +168,20 @@
       root.querySelector('#cost-power-value').textContent = power.toLocaleString('en-GB');
       root.querySelector('#cost-capacity-value').textContent = capacity;
       root.querySelector('#cost-vehicles-value').textContent = vehicles;
-      root.querySelector('#cost-runtime-value').textContent = runtimeLabel(runtime);
+      root.querySelector('#cost-purchase-value').textContent = runtimeLabel(purchaseRuntime);
+      root.querySelector('#cost-running-value').textContent = runtimeLabel(runningRuntime);
       root.querySelector('#cost-score-max-value').textContent = scoreMax.toLocaleString('en-GB');
       root.querySelector('#cost-adjusted-bases').innerHTML = `<strong>Adjusted bases</strong><span>${money(purchaseBase)} purchase · ${money(runningBase)} running</span>`;
       root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result costs"><span>Costs</span><strong>${money(purchaseBase * purchaseCallback * formation / 256)} purchase<br>${money(runningBase * runningCallback * formation / 256)} running</strong><small>Formation total</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
     root.querySelectorAll('select').forEach(input => input.addEventListener('change', update));
-    get('cost-runtime-multiplier').addEventListener('input', event => {
+    ['cost-purchase-multiplier','cost-running-multiplier'].forEach(id => get(id).addEventListener('input', event => {
       const value = Number(event.target.value);
       const nearest = runtimeNotches.reduce((best, notch) => Math.abs(notch - value) < Math.abs(best - value) ? notch : best, runtimeNotches[0]);
       event.target.value = nearest;
       update();
-    });
+    }));
     update();
   };
 })();
