@@ -10,6 +10,28 @@
     sleeper: [.70, .35], dvt: [.75, .40]
   };
   const wagonOptions = {coach:['coach','sleeper','dvt'], wagon:['freight','tank','refrigerated']};
+  const presets = [
+    ['GWR Mink goods van',{type:'wagon',speed:50,capacity:20,wagon:'freight'}],
+    ['BR HHA hopper',{type:'wagon',speed:75,capacity:72,wagon:'freight'}],
+    ['Mk1 coach',{type:'coach',speed:90,capacity:64,wagon:'coach'}],
+    ['Class 37',{type:'locomotive',speed:90,power:1750,fuel:'diesel'}],
+    ['A3 steam locomotive',{type:'locomotive',speed:100,power:1750,fuel:'steam'}],
+    ['Class 43 HST power car',{type:'locomotive',speed:125,power:4500,fuel:'diesel'}],
+    ['Class 91',{type:'locomotive',speed:125,power:6480,fuel:'electric'}],
+    ['Class 456',{type:'multiple_unit',speed:75,power:500,capacity:79,vehicles:2,fuel:'electric'}],
+    ['Class 323',{type:'multiple_unit',speed:90,power:1566,capacity:98,vehicles:4,fuel:'electric'}],
+    ['Class 376',{type:'multiple_unit',speed:75,power:2682,capacity:60,vehicles:5,fuel:'electric'}],
+    ['APT-E',{type:'multiple_unit',speed:140,power:2700,capacity:37,vehicles:4,fuel:'gas-turbine'}],
+    ['APT-P',{type:'multiple_unit',speed:125,power:8000,capacity:52,vehicles:14,fuel:'electric'}],
+    ['Class 373 Eurostar',{type:'multiple_unit',speed:186,power:16400,capacity:105,vehicles:20,fuel:'electric'}],
+    ['Class 374 Eurostar',{type:'multiple_unit',speed:199,power:21000,capacity:40,vehicles:16,fuel:'electric'}],
+    ['Class 555',{type:'multiple_unit',speed:50,power:1770,capacity:120,vehicles:5,fuel:'electric'}],
+    ['LU 2024 Stock',{type:'multiple_unit',speed:62,power:3400,capacity:119,vehicles:9,fuel:'electric'}],
+    ['LU S Stock',{type:'multiple_unit',speed:60,power:0,capacity:1435,vehicles:7,fuel:'electric'}],
+    ['LU D78 Stock',{type:'multiple_unit',speed:45,power:3000,capacity:535,vehicles:3,fuel:'electric'}],
+    ['Class 484',{type:'multiple_unit',speed:45,power:1500,capacity:141,vehicles:2,fuel:'electric'}],
+    ['LU 1996 Stock',{type:'multiple_unit',speed:62,power:2500,capacity:141,vehicles:6,fuel:'electric'}]
+  ];
   const names = {locomotive:'Locomotive', multiple_unit:'Multiple unit', coach:'Coach', wagon:'Freight wagon'};
   const basecostGroups = {
     'Purchase': ['PR_BUILD_VEHICLE_TRAIN', 'PR_BUILD_VEHICLE_WAGON'],
@@ -20,6 +42,7 @@
   const form = `
     <section class="cost-model-card">
       <div class="cost-model-main">
+      <div class="cost-model-presets"><h3>Examples</h3><p>Load a representative BRTrains unit.</p>${presets.map(([label]) => `<button type="button" data-preset="${label}">${label}</button>`).join('')}</div>
       <div class="cost-model-form">
         <div class="cost-model-field"><label for="cost-train-type">Vehicle type</label><select id="cost-train-type"><option value="locomotive">Locomotive</option><option value="multiple_unit">Multiple unit</option><option value="coach">Coach</option><option value="wagon">Freight wagon</option></select></div>
         <div id="cost-fuel-field" class="cost-model-field"><label for="cost-fuel">Fuel / power type</label><select id="cost-fuel">${Object.keys(fuel).filter(key => key !== 'unpowered').map(key => `<option value="${key}"${key === 'diesel' ? ' selected' : ''}>${key.replace('-', ' ')}</option>`).join('')}</select></div>
@@ -80,6 +103,18 @@
       select.innerHTML = options.map(key => `<option value="${key}">${key}</option>`).join('');
       select.value = options.includes(current) ? current : options[0];
     };
+    root.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => {
+      const values = presets.find(([label]) => label === button.dataset.preset)?.[1];
+      if (!values) return;
+      get('cost-train-type').value = values.type;
+      if (values.speed !== undefined) get('cost-speed').value = values.speed;
+      if (values.power !== undefined) get('cost-power').value = values.power;
+      if (values.capacity !== undefined) get('cost-capacity').value = values.capacity;
+      if (values.vehicles !== undefined) get('cost-vehicles').value = values.vehicles;
+      if (values.fuel) get('cost-fuel').value = values.fuel;
+      if (values.wagon) get('cost-wagon').value = values.wagon;
+      update();
+    }));
     const update = () => {
       const type = get('cost-train-type').value;
       const powered = type === 'locomotive' || type === 'multiple_unit';
