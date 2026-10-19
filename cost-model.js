@@ -63,11 +63,13 @@
         <input id="cost-running-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-running-notches">
         <datalist id="cost-running-notches"><option value="0.25" label="1/4"></option><option value="0.333333" label="1/3"></option><option value="0.5" label="1/2"></option><option value="1" label="1x"></option><option value="2" label="2x"></option><option value="3" label="3x"></option><option value="4" label="4x"></option></datalist>
         <label for="cost-score-max">Score maximum <output id="cost-score-max-value">16,000</output></label>
-        <input id="cost-score-max" type="range" min="1000" max="16000" step="100" value="16000">
+        <input id="cost-score-max" type="range" min="255" max="16000" step="1" value="16000" list="cost-score-notches">
+        <datalist id="cost-score-notches"><option value="255" label="255"></option><option value="500" label="500"></option><option value="1000" label="1k"></option><option value="2000" label="2k"></option><option value="3000" label="3k"></option><option value="4000" label="4k"></option><option value="5000" label="5k"></option><option value="6000" label="6k"></option><option value="7000" label="7k"></option><option value="8000" label="8k"></option><option value="9000" label="9k"></option><option value="10000" label="10k"></option><option value="11000" label="11k"></option><option value="12000" label="12k"></option><option value="13000" label="13k"></option><option value="14000" label="14k"></option><option value="15000" label="15k"></option><option value="16000" label="16k"></option></datalist>
       </div>
       <div class="cost-model-basecosts">
         <h3>NML base-cost exponents</h3>
         <div id="cost-basecost-list" class="cost-model-base-list"></div>
+        <datalist id="cost-basecost-notches"><option value="-8" label="−8"></option><option value="-4" label="−4"></option><option value="-2" label="−2"></option><option value="-1" label="−1"></option><option value="0" label="0"></option><option value="1" label="+1"></option><option value="2" label="+2"></option><option value="4" label="+4"></option><option value="8" label="+8"></option><option value="16" label="+16"></option></datalist>
         <div id="cost-adjusted-bases" class="cost-adjusted-bases"></div>
       </div>
       </aside>
@@ -82,7 +84,7 @@
     root.dataset.bound = 'true';
     const get = id => root.querySelector(`#${id}`);
     const list = get('cost-basecost-list');
-    list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="4" step="1" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
+    list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="16" step="1" list="cost-basecost-notches" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
     const baseExponent = key => Number(root.querySelector(`[data-basecost="${key}"]`).value);
     root.querySelectorAll('[data-basecost]').forEach(input => input.addEventListener('input', () => {
       const value = Number(input.value);
@@ -182,6 +184,13 @@
       event.target.value = nearest;
       update();
     }));
+    const scoreNotches = [255,500,1000,...Array.from({length:15},(_,index)=>(index+2)*1000)];
+    get('cost-score-max').addEventListener('input', event => {
+      const value = Number(event.target.value);
+      const nearest = scoreNotches.reduce((best, notch) => Math.abs(notch - value) < Math.abs(best - value) ? notch : best, scoreNotches[0]);
+      event.target.value = nearest;
+      update();
+    });
     update();
   };
 })();
