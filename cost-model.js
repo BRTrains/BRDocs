@@ -9,12 +9,13 @@
     freight: [.25, .10], tank: [.35, .15], refrigerated: [.45, .20], coach: [.55, .30],
     sleeper: [.70, .35], dvt: [.75, .40]
   };
+  const wagonOptions = {coach:['coach','sleeper','dvt'], wagon:['freight','tank','refrigerated']};
   const names = {locomotive:'Locomotive', multiple_unit:'Multiple unit', coach:'Coach', wagon:'Freight wagon'};
   const basecostGroups = {
     'Purchase': ['PR_BUILD_VEHICLE_TRAIN', 'PR_BUILD_VEHICLE_WAGON'],
     'Running': ['PR_RUNNING_TRAIN_STEAM', 'PR_RUNNING_TRAIN_DIESEL', 'PR_RUNNING_TRAIN_ELECTRIC']
   };
-  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:-2,PR_BUILD_VEHICLE_WAGON:1,PR_RUNNING_TRAIN_STEAM:-2,PR_RUNNING_TRAIN_DIESEL:-4,PR_RUNNING_TRAIN_ELECTRIC:0};
+  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:0,PR_BUILD_VEHICLE_WAGON:0,PR_RUNNING_TRAIN_STEAM:0,PR_RUNNING_TRAIN_DIESEL:0,PR_RUNNING_TRAIN_ELECTRIC:0};
   const basecostLabels = Object.fromEntries(Object.values(basecostGroups).flat().map(key=>[key,key.replace(/^PR_/,'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())]));
   const form = `
     <section class="cost-model-card">
@@ -68,10 +69,18 @@
       const index = runtimeNotches.reduce((best, notch, current) => Math.abs(notch - value) < Math.abs(runtimeNotches[best] - value) ? current : best, 0);
       return labels[index];
     };
+    const updateWagonOptions = type => {
+      const select = get('cost-wagon');
+      const options = wagonOptions[type] || [];
+      const current = select.value;
+      select.innerHTML = options.map(key => `<option value="${key}">${key}</option>`).join('');
+      select.value = options.includes(current) ? current : options[0];
+    };
     const update = () => {
       const type = get('cost-train-type').value;
       const powered = type === 'locomotive' || type === 'multiple_unit';
       const multipleUnit = type === 'multiple_unit';
+      updateWagonOptions(type);
       get('cost-fuel-field').classList.toggle('hidden', !powered);
       get('cost-wagon-field').classList.toggle('hidden', powered);
       get('cost-power-field').classList.toggle('hidden', !powered);
