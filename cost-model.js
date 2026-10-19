@@ -12,9 +12,9 @@
   const names = {locomotive:'Locomotive', multiple_unit:'Multiple unit', coach:'Coach', wagon:'Freight wagon'};
   const basecostGroups = {
     'Purchase': ['PR_BUILD_VEHICLE_TRAIN', 'PR_BUILD_VEHICLE_WAGON'],
-    'Running': ['PR_RUNNING_TRAIN_STEAM', 'PR_RUNNING_TRAIN_DIESEL']
+    'Running': ['PR_RUNNING_TRAIN_STEAM', 'PR_RUNNING_TRAIN_DIESEL', 'PR_RUNNING_TRAIN_ELECTRIC']
   };
-  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:-2,PR_BUILD_VEHICLE_WAGON:1,PR_RUNNING_TRAIN_STEAM:-2,PR_RUNNING_TRAIN_DIESEL:-4};
+  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:-2,PR_BUILD_VEHICLE_WAGON:1,PR_RUNNING_TRAIN_STEAM:-2,PR_RUNNING_TRAIN_DIESEL:-4,PR_RUNNING_TRAIN_ELECTRIC:0};
   const basecostLabels = Object.fromEntries(Object.values(basecostGroups).flat().map(key=>[key,key.replace(/^PR_/,'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())]));
   const form = `
     <section class="cost-model-card">
@@ -81,6 +81,7 @@
       const wagonPurchaseBase = 2000 * (2 ** baseExponent('PR_BUILD_VEHICLE_WAGON'));
       const steamRunningBase = 5600 * (2 ** baseExponent('PR_RUNNING_TRAIN_STEAM'));
       const dieselRunningBase = 5200 * (2 ** baseExponent('PR_RUNNING_TRAIN_DIESEL'));
+      const electricRunningBase = 4800 * (2 ** baseExponent('PR_RUNNING_TRAIN_ELECTRIC'));
       const speedPart = Math.min(1, Math.max(0, speed / 200));
       const powerPart = Math.min(1, Math.max(0, power / 21000));
       const capacityPart = Math.min(1, Math.max(0, capacity / 120));
@@ -99,7 +100,7 @@
       const powered = type === 'locomotive' || type === 'multiple_unit';
       const purchaseBase = powered ? powerPurchaseBase : wagonPurchaseBase;
       const runningFuelName = get('cost-fuel').value;
-      const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'diesel' || runningFuelName === 'unpowered' ? dieselRunningBase : 4800;
+      const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery' ? electricRunningBase : dieselRunningBase;
       const formation = type === 'multiple_unit' ? vehicles : 1;
       const highlighted = new Set([powered ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON']);
       if (runningFuelName === 'steam') highlighted.add('PR_RUNNING_TRAIN_STEAM');
