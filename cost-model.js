@@ -99,7 +99,7 @@
     const root = document.querySelector('.cost-model-card');
     if (!root || root.dataset.bound) return;
     root.dataset.bound = 'true';
-    const pageRoot = root.closest('[data-cost-panel="model"]')?.parentElement || root;
+    const pageRoot = document.querySelector('#maintainer-content') || document;
     const get = id => pageRoot.querySelector(`#${id}`);
     const list = get('cost-basecost-list');
     list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="16" step="1" list="cost-basecost-notches" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
@@ -137,7 +137,7 @@
       simpleUpdate();
     }));
     pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
-    const tabRoot = root.closest('[data-cost-panel="model"]')?.parentElement || document;
+    const tabRoot = pageRoot;
     tabRoot.querySelectorAll('[data-cost-tab]').forEach(tab => tab.addEventListener('click', () => {
       tabRoot.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== tab.dataset.costTab));
       tabRoot.querySelectorAll('[data-cost-tab]').forEach(button => button.classList.toggle('active', button === tab));
