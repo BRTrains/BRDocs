@@ -100,7 +100,7 @@
     if (!root || root.dataset.bound) return;
     root.dataset.bound = 'true';
     const pageRoot = document.querySelector('#maintainer-content') || document;
-    const get = id => pageRoot.querySelector(`#${id}`);
+    const get = id => pageRoot.querySelector(id.startsWith('#') || id.startsWith('[') ? id : `#${id}`);
     const list = get('cost-basecost-list');
     list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="16" step="1" list="cost-basecost-notches" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
     const baseExponent = key => Number(pageRoot.querySelector(`[data-basecost="${key}"]`).value);
