@@ -37,7 +37,7 @@
     'Purchase': ['PR_BUILD_VEHICLE_TRAIN', 'PR_BUILD_VEHICLE_WAGON'],
     'Running': ['PR_RUNNING_TRAIN_STEAM', 'PR_RUNNING_TRAIN_DIESEL', 'PR_RUNNING_TRAIN_ELECTRIC']
   };
-  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:0,PR_BUILD_VEHICLE_WAGON:0,PR_RUNNING_TRAIN_STEAM:0,PR_RUNNING_TRAIN_DIESEL:0,PR_RUNNING_TRAIN_ELECTRIC:0};
+  const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:-1,PR_BUILD_VEHICLE_WAGON:2,PR_RUNNING_TRAIN_STEAM:-1,PR_RUNNING_TRAIN_DIESEL:-1,PR_RUNNING_TRAIN_ELECTRIC:-1};
   const basecostLabels = Object.fromEntries(Object.values(basecostGroups).flat().map(key=>[key,key.replace(/^PR_/,'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())]));
   const form = `
     <section class="cost-model-card">
