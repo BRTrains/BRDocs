@@ -80,8 +80,8 @@
     <div data-cost-panel="simple" class="hidden">
       <section class="simple-cost-card">
         <div class="simple-cost-form">
-          <div class="cost-model-field"><label for="simple-purchase-value">Purchase cost value</label><input id="simple-purchase-value" type="number" min="0" value="100"></div>
-          <div class="cost-model-field"><label for="simple-running-value">Running cost value</label><input id="simple-running-value" type="number" min="0" value="100"></div>
+          <div class="cost-model-field"><label id="simple-purchase-label" for="simple-purchase-value">Purchase callback value</label><div class="simple-input-wrap"><span id="simple-purchase-prefix" class="hidden">£</span><input id="simple-purchase-value" type="number" min="0" value="100"></div></div>
+          <div class="cost-model-field"><label id="simple-running-label" for="simple-running-value">Running callback value</label><div class="simple-input-wrap"><span id="simple-running-prefix" class="hidden">£</span><input id="simple-running-value" type="number" min="0" value="100"></div></div>
           <div class="cost-model-field"><label for="simple-cars">Number of vehicles (if articulated, otherwise 1)</label><input id="simple-cars" type="number" min="1" value="1"></div>
           <div class="cost-model-field"><label for="simple-purchase-base">Purchase base</label><select id="simple-purchase-base"><option value="train">Powered train (£400,000)</option><option value="wagon">Wagon/coach (£2,000)</option></select></div>
           <div class="cost-model-field"><label for="simple-running-base">Running base</label><select id="simple-running-base"><option value="steam">Steam (£5,600)</option><option value="diesel" selected>Diesel (£5,200)</option><option value="electric">Electric (£4,800)</option></select></div>
@@ -118,8 +118,12 @@
     const simpleExponentList = get('simple-exponent-list');
     simpleExponentList.innerHTML = Object.entries(simpleExponentDefaults).map(([key,value]) => `<label class="simple-exponent-row" data-simple-exp-row="${key}"><span>${basecostLabels[key]}</span><output data-simple-exp-output="${key}">${value}</output><input type="range" min="-8" max="16" step="1" value="${value}" data-simple-exp="${key}"></label>`).join('');
     const simpleUpdate = () => {
-      const maximum = 65535;
       const reverse = get('simple-mode-cost').checked;
+      get('simple-purchase-label').textContent = reverse ? 'Purchase cost' : 'Purchase callback value';
+      get('simple-running-label').textContent = reverse ? 'Running cost' : 'Running callback value';
+      get('simple-purchase-prefix').classList.toggle('hidden', !reverse);
+      get('simple-running-prefix').classList.toggle('hidden', !reverse);
+      const maximum = 65535;
       const purchaseValue = Math.max(0, number('simple-purchase-value'));
       const runningValue = Math.max(0, number('simple-running-value'));
       const cars = Math.max(1, number('simple-cars'));
@@ -142,7 +146,7 @@
         const runningFactor = Math.min(maximum, Math.max(0, Math.round(idealRunning)));
         const purchaseCost = purchaseBase * purchaseFactor / 256;
         const runningCost = runningBase * runningFactor / 256;
-        get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${purchaseFactor.toLocaleString('en-GB')}</strong><small>Ideal ${idealPurchase.toFixed(2)} · actual ${money(purchaseCost)}${cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : ''}</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${runningFactor.toLocaleString('en-GB')}</strong><small>Ideal ${idealRunning.toFixed(2)} · actual ${money(runningCost)}${cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : ''}</small></div>`;
+        get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase</span><strong>Ideal value: ${idealPurchase.toFixed(2)}<br>Actual value: ${purchaseFactor.toLocaleString('en-GB')}</strong><small>Ideal £${purchaseValue.toLocaleString('en-GB')} · Actual £${money(purchaseCost)}${cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : ''}</small></div><div class="cost-result"><span>Running</span><strong>Ideal value: ${idealRunning.toFixed(2)}<br>Actual value: ${runningFactor.toLocaleString('en-GB')}</strong><small>Ideal £${runningValue.toLocaleString('en-GB')} · Actual £${money(runningCost)}${cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : ''}</small></div>`;
       }
 
     };
