@@ -76,6 +76,7 @@
       </div>
       </aside>
     </section>
+    <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. BRBuild’s default score maximum is 1,000; the slider is provided for calibration experiments.</p>
     </div>
     <div data-cost-panel="simple" class="hidden">
       <section class="simple-cost-card">
@@ -90,8 +91,7 @@
         <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"><div class="cost-result"><span>Purchase cost</span><strong>£156,250</strong><small>Per car</small></div><div class="cost-result"><span>Running cost</span><strong>£2,031</strong><small>Per car</small></div></div>
         <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
       </section>
-    </div>
-    <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. BRBuild’s default score maximum is 1,000; the slider is provided for calibration experiments.</p>`;
+    </div>`;
   const page = {title:'Cost model calculator', intro:'Enter representative vehicle data and see the generated purchase and running-cost callback values.', body:`<p>Use this tool to sanity-check the relative position of wagons, coaches, locomotives and multiple units before changing BRBuild’s constants. The callback values are the factors emitted to NewGRF; the pound figures use OpenTTD’s no-inflation base prices.</p>${form}`};
   maintainerPages['cost-model'] = page;
   window.maintainerPageHooks = window.maintainerPageHooks || {};
