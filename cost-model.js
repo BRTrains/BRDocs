@@ -62,8 +62,8 @@
         <label for="cost-running-multiplier">Running Cost Multiplier (newGRF Parameter) <output id="cost-running-value">1x</output></label>
         <input id="cost-running-multiplier" type="range" min="0.25" max="4" step="any" value="1" list="cost-running-notches">
         <datalist id="cost-running-notches"><option value="0.25" label="1/4"></option><option value="0.333333" label="1/3"></option><option value="0.5" label="1/2"></option><option value="1" label="1x"></option><option value="2" label="2x"></option><option value="3" label="3x"></option><option value="4" label="4x"></option></datalist>
-        <label for="cost-score-max">Score maximum <output id="cost-score-max-value">16,000</output></label>
-        <input id="cost-score-max" type="range" min="255" max="16000" step="1" value="16000" list="cost-score-notches">
+        <label for="cost-score-max">Score maximum <output id="cost-score-max-value">1,000</output></label>
+        <input id="cost-score-max" type="range" min="255" max="16000" step="1" value="1000" list="cost-score-notches">
         <datalist id="cost-score-notches"><option value="255" label="255"></option><option value="500" label="500"></option><option value="1000" label="1k"></option><option value="2000" label="2k"></option><option value="3000" label="3k"></option><option value="4000" label="4k"></option><option value="5000" label="5k"></option><option value="6000" label="6k"></option><option value="7000" label="7k"></option><option value="8000" label="8k"></option><option value="9000" label="9k"></option><option value="10000" label="10k"></option><option value="11000" label="11k"></option><option value="12000" label="12k"></option><option value="13000" label="13k"></option><option value="14000" label="14k"></option><option value="15000" label="15k"></option><option value="16000" label="16k"></option></datalist>
       </div>
       <div class="cost-model-basecosts">
@@ -74,7 +74,7 @@
       </div>
       </aside>
     </section>
-    <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. The maximum is normally fixed at 16,000 in BRBuild; the slider is provided for calibration experiments.</p>`;
+    <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. BRBuild’s default score maximum is 1,000; the slider is provided for calibration experiments.</p>`;
   const page = {title:'Cost model calculator', intro:'Enter representative vehicle data and see the generated purchase and running-cost callback values.', body:`<p>Use this tool to sanity-check the relative position of wagons, coaches, locomotives and multiple units before changing BRBuild’s constants. The callback values are the factors emitted to NewGRF; the pound figures use OpenTTD’s no-inflation base prices.</p>${form}`};
   maintainerPages['cost-model'] = page;
   window.maintainerPageHooks = window.maintainerPageHooks || {};
@@ -136,7 +136,7 @@
       const power = powered ? Math.max(0, number('cost-power')) : 0;
       const capacity = type === 'locomotive' ? 0 : Math.max(0, number('cost-capacity'));
       const vehicles = multipleUnit ? Math.max(1, number('cost-vehicles')) : 1;
-      const scoreMax = number('cost-score-max') || 16000;
+      const scoreMax = number('cost-score-max') || 1000;
       const purchaseRuntime = Number(get('cost-purchase-multiplier').value);
       const runningRuntime = Number(get('cost-running-multiplier').value);
       const powerPurchaseBase = 400000 * (2 ** baseExponent('PR_BUILD_VEHICLE_TRAIN'));
@@ -157,7 +157,7 @@
       const purchase = base * purchaseFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : purchaseWagon);
       const running = base * runningFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : runningWagon);
       const purchaseCallback = Math.min(scoreMax, Math.round(purchase)) * purchaseRuntime;
-      const runningCallback = Math.min(scoreMax, Math.round(running)) * runningRuntime;
+      const runningCallback = powered ? Math.min(scoreMax, Math.round(running)) * runningRuntime : 0;
       const purchaseBase = powered ? powerPurchaseBase : wagonPurchaseBase;
       const runningFuelName = get('cost-fuel').value;
       const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery' ? electricRunningBase : dieselRunningBase;
@@ -174,8 +174,8 @@
       root.querySelector('#cost-purchase-value').textContent = runtimeLabel(purchaseRuntime);
       root.querySelector('#cost-running-value').textContent = runtimeLabel(runningRuntime);
       root.querySelector('#cost-score-max-value').textContent = scoreMax.toLocaleString('en-GB');
-      root.querySelector('#cost-adjusted-bases').innerHTML = `<strong>Adjusted bases</strong><span>${money(purchaseBase)} purchase · ${money(runningBase)} running</span>`;
-      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result costs"><span>Costs</span><strong>${money(purchaseBase * purchaseCallback * formation / 256)} purchase<br>${money(runningBase * runningCallback * formation / 256)} running</strong><small>Formation total</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
+      root.querySelector('#cost-adjusted-bases').innerHTML = `<strong>Adjusted bases</strong><span>${money(purchaseBase)} purchase · ${powered ? money(runningBase) + ' running' : 'RUNNING_COST_NONE'}</span>`;
+      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${powered ? money(runningBase * runningCallback / 256) + ' per vehicle · ' + money(runningBase * runningCallback * formation / 256) + ' formation' : 'No charge: RUNNING_COST_NONE'}</small></div><div class="cost-result costs"><span>Costs</span><strong>${money(purchaseBase * purchaseCallback * formation / 256)} purchase<br>${powered ? money(runningBase * runningCallback * formation / 256) : '£0'} running</strong><small>Formation total</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
     root.querySelectorAll('select').forEach(input => input.addEventListener('change', update));
