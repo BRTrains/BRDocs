@@ -82,7 +82,7 @@
         <div class="simple-cost-form">
           <div class="cost-model-field"><label for="simple-purchase-value">Purchase cost value</label><input id="simple-purchase-value" type="number" min="0" value="100"></div>
           <div class="cost-model-field"><label for="simple-running-value">Running cost value</label><input id="simple-running-value" type="number" min="0" value="100"></div>
-          <div class="cost-model-field"><label for="simple-cars">Number of cars</label><input id="simple-cars" type="number" min="1" value="1"></div>
+          <div class="cost-model-field"><label for="simple-cars">Number of vehicles (if articulated, otherwise 1)</label><input id="simple-cars" type="number" min="1" value="1"></div>
           <div class="cost-model-field"><label for="simple-purchase-base">Purchase base</label><select id="simple-purchase-base"><option value="train">Powered train (£400,000)</option><option value="wagon">Wagon/coach (£2,000)</option></select></div>
           <div class="cost-model-field"><label for="simple-running-base">Running base</label><select id="simple-running-base"><option value="steam">Steam (£5,600)</option><option value="diesel" selected>Diesel (£5,200)</option><option value="electric">Electric (£4,800)</option></select></div>
           <div class="simple-toggle"><span>Callback values are limited to 65,535</span></div>
