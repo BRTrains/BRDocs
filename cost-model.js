@@ -85,7 +85,7 @@
           <div class="cost-model-field"><label for="simple-cars">Number of vehicles (if articulated, otherwise 1)</label><input id="simple-cars" type="number" min="1" value="1"></div>
           <div class="cost-model-field"><label for="simple-purchase-base">Purchase base</label><select id="simple-purchase-base"><option value="train">Powered train (£400,000)</option><option value="wagon">Wagon/coach (£2,000)</option></select></div>
           <div class="cost-model-field"><label for="simple-running-base">Running base</label><select id="simple-running-base"><option value="steam">Steam (£5,600)</option><option value="diesel" selected>Diesel (£5,200)</option><option value="electric">Electric (£4,800)</option></select></div>
-          <div class="simple-toggle"><span>Callback values are limited to 65,535</span></div>
+          <fieldset class="simple-toggle"><legend>Calculator mode</legend><label><input id="simple-mode-callback" name="simple-calculator-mode" type="radio" checked> Callback → £</label><label><input id="simple-mode-cost" name="simple-calculator-mode" type="radio"> £ → callback</label></fieldset>
         </div>
         <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
         <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"><div class="cost-result"><span>Purchase cost</span><strong>£156,250</strong><small>Per car</small></div><div class="cost-result"><span>Running cost</span><strong>£2,031</strong><small>Per car</small></div></div>
@@ -119,18 +119,31 @@
     simpleExponentList.innerHTML = Object.entries(simpleExponentDefaults).map(([key,value]) => `<label class="simple-exponent-row" data-simple-exp-row="${key}"><span>${basecostLabels[key]}</span><output data-simple-exp-output="${key}">${value}</output><input type="range" min="-8" max="16" step="1" value="${value}" data-simple-exp="${key}"></label>`).join('');
     const simpleUpdate = () => {
       const maximum = 65535;
-      const purchaseValue = Math.min(maximum, Math.max(0, number('simple-purchase-value')));
-      const runningValue = Math.min(maximum, Math.max(0, number('simple-running-value')));
+      const reverse = get('simple-mode-cost').checked;
+      const purchaseValue = Math.max(0, number('simple-purchase-value'));
+      const runningValue = Math.max(0, number('simple-running-value'));
       const cars = Math.max(1, number('simple-cars'));
       const purchaseKey = get('simple-purchase-base').value === 'train' ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON';
       const runningKey = `PR_RUNNING_TRAIN_${get('simple-running-base').value.toUpperCase()}`;
       const relevant = new Set([purchaseKey, runningKey]);
       pageRoot.querySelectorAll('[data-simple-exp-row]').forEach(row => row.classList.toggle('relevant', relevant.has(row.dataset.simpleExpRow)));
-      const purchaseCost = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value)) * purchaseValue / 256;
-      const runningCost = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value)) * runningValue / 256;
-      const suffix = cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : '';
-      const runningSuffix = cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : '';
-      get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase cost</span><strong>${money(purchaseCost)}</strong><small>${cars > 1 ? suffix.slice(1) : 'Per car'}</small></div><div class="cost-result"><span>Running cost</span><strong>${money(runningCost)}</strong><small>${cars > 1 ? runningSuffix.slice(1) : 'Per car'}</small></div>`;
+      const purchaseBase = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value));
+      const runningBase = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value));
+      if (!reverse) {
+        const purchaseFactor = Math.min(maximum, purchaseValue);
+        const runningFactor = Math.min(maximum, runningValue);
+        const purchaseCost = purchaseBase * purchaseFactor / 256;
+        const runningCost = runningBase * runningFactor / 256;
+        get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase cost</span><strong>${money(purchaseCost)}</strong><small>${cars > 1 ? `Per car · ${money(purchaseCost * cars)} formation` : 'Per car'}</small></div><div class="cost-result"><span>Running cost</span><strong>${money(runningCost)}</strong><small>${cars > 1 ? `Per car · ${money(runningCost * cars)} formation` : 'Per car'}</small></div>`;
+      } else {
+        const idealPurchase = purchaseValue * 256 / purchaseBase;
+        const idealRunning = runningValue * 256 / runningBase;
+        const purchaseFactor = Math.min(maximum, Math.max(0, Math.round(idealPurchase)));
+        const runningFactor = Math.min(maximum, Math.max(0, Math.round(idealRunning)));
+        const purchaseCost = purchaseBase * purchaseFactor / 256;
+        const runningCost = runningBase * runningFactor / 256;
+        get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${purchaseFactor.toLocaleString('en-GB')}</strong><small>Ideal ${idealPurchase.toFixed(2)} · actual ${money(purchaseCost)}${cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : ''}</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${runningFactor.toLocaleString('en-GB')}</strong><small>Ideal ${idealRunning.toFixed(2)} · actual ${money(runningCost)}${cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : ''}</small></div>`;
+      }
 
     };
     pageRoot.querySelectorAll('[data-simple-exp]').forEach(input => input.addEventListener('input', () => {
@@ -138,7 +151,7 @@
       get(`[data-simple-exp-output="${input.dataset.simpleExp}"]`).textContent = input.value;
       simpleUpdate();
     }));
-    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
+    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-mode-callback,#simple-mode-cost').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
     const tabRoot = pageRoot;
     tabRoot.querySelectorAll('[data-cost-tab]').forEach(tab => tab.addEventListener('click', () => {
       tabRoot.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== tab.dataset.costTab));
