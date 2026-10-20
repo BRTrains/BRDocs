@@ -40,6 +40,8 @@
   const basecostDefaults = {PR_BUILD_VEHICLE_TRAIN:-1,PR_BUILD_VEHICLE_WAGON:2,PR_RUNNING_TRAIN_STEAM:-1,PR_RUNNING_TRAIN_DIESEL:-1,PR_RUNNING_TRAIN_ELECTRIC:-1};
   const basecostLabels = Object.fromEntries(Object.values(basecostGroups).flat().map(key=>[key,key.replace(/^PR_/,'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())]));
   const form = `
+    <div class="cost-model-tabs" role="tablist"><button type="button" class="active" data-cost-tab="model">BRBuild model</button><button type="button" data-cost-tab="simple">Base-cost calculator</button></div>
+    <div data-cost-panel="model">
     <section class="cost-model-card">
       <div class="cost-model-main">
       <div class="cost-model-presets"><h3>Examples</h3><p>Load a representative BRTrains unit.</p>${presets.map(([label]) => `<button type="button" data-preset="${label}">${label}</button>`).join('')}</div>
@@ -74,6 +76,21 @@
       </div>
       </aside>
     </section>
+    </div>
+    <div data-cost-panel="simple" class="hidden">
+      <section class="simple-cost-card">
+        <div class="simple-cost-form">
+          <div class="cost-model-field"><label for="simple-purchase-value">Purchase cost value</label><input id="simple-purchase-value" type="number" min="0" value="100"></div>
+          <div class="cost-model-field"><label for="simple-running-value">Running cost value</label><input id="simple-running-value" type="number" min="0" value="100"></div>
+          <div class="cost-model-field"><label for="simple-cars">Number of cars</label><input id="simple-cars" type="number" min="1" value="1"></div>
+          <div class="cost-model-field"><label for="simple-purchase-base">Purchase base</label><select id="simple-purchase-base"><option value="train">Powered train (£400,000)</option><option value="wagon">Wagon/coach (£2,000)</option></select></div>
+          <div class="cost-model-field"><label for="simple-running-base">Running base</label><select id="simple-running-base"><option value="steam">Steam (£5,600)</option><option value="diesel" selected>Diesel (£5,200)</option><option value="electric">Electric (£4,800)</option></select></div>
+          <label class="simple-toggle"><input id="simple-callback" type="checkbox" checked> Callback value <span>(max 65,535)</span></label>
+        </div>
+        <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
+        <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"></div>
+      </section>
+    </div>
     <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. BRBuild’s default score maximum is 1,000; the slider is provided for calibration experiments.</p>`;
   const page = {title:'Cost model calculator', intro:'Enter representative vehicle data and see the generated purchase and running-cost callback values.', body:`<p>Use this tool to sanity-check the relative position of wagons, coaches, locomotives and multiple units before changing BRBuild’s constants. The callback values are the factors emitted to NewGRF; the pound figures use OpenTTD’s no-inflation base prices.</p>${form}`};
   maintainerPages['cost-model'] = page;
@@ -95,6 +112,37 @@
     }));
     const number = id => Number(get(id).value) || 0;
     const money = value => `£${Math.round(value).toLocaleString('en-GB')}`;
+    const simpleExponentDefaults = {PR_BUILD_VEHICLE_TRAIN:0,PR_BUILD_VEHICLE_WAGON:0,PR_RUNNING_TRAIN_STEAM:0,PR_RUNNING_TRAIN_DIESEL:0,PR_RUNNING_TRAIN_ELECTRIC:0};
+    const simpleBases = {PR_BUILD_VEHICLE_TRAIN:400000,PR_BUILD_VEHICLE_WAGON:2000,PR_RUNNING_TRAIN_STEAM:5600,PR_RUNNING_TRAIN_DIESEL:5200,PR_RUNNING_TRAIN_ELECTRIC:4800};
+    const simpleExponentList = get('simple-exponent-list');
+    simpleExponentList.innerHTML = Object.entries(simpleExponentDefaults).map(([key,value]) => `<label class="simple-exponent-row"><span>${basecostLabels[key]}</span><output data-simple-exp-output="${key}">${value}</output><input type="range" min="-8" max="16" step="1" value="${value}" data-simple-exp="${key}"></label>`).join('');
+    const simpleUpdate = () => {
+      const callback = get('simple-callback').checked;
+      const maximum = callback ? 65535 : 255;
+      const purchaseValue = Math.min(maximum, Math.max(0, number('simple-purchase-value')));
+      const runningValue = Math.min(maximum, Math.max(0, number('simple-running-value')));
+      const cars = Math.max(1, number('simple-cars'));
+      const purchaseKey = get('simple-purchase-base').value === 'train' ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON';
+      const runningKey = `PR_RUNNING_TRAIN_${get('simple-running-base').value.toUpperCase()}`;
+      const purchaseCost = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value)) * purchaseValue / 256;
+      const runningCost = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value)) * runningValue / 256;
+      const suffix = cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : '';
+      const runningSuffix = cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : '';
+      get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase cost</span><strong>${money(purchaseCost)}</strong><small>${cars > 1 ? suffix.slice(1) : 'Per car'}</small></div><div class="cost-result"><span>Running cost</span><strong>${money(runningCost)}</strong><small>${cars > 1 ? runningSuffix.slice(1) : 'Per car'}</small></div>`;
+      get('simple-callback').parentElement.querySelector('span').textContent = callback ? '(max 65,535)' : '(max 255)';
+    };
+    root.querySelectorAll('[data-simple-exp]').forEach(input => input.addEventListener('input', () => {
+      input.value = Math.max(-8, Math.min(16, Math.round(Number(input.value))));
+      get(`[data-simple-exp-output="${input.dataset.simpleExp}"]`).textContent = input.value;
+      simpleUpdate();
+    }));
+    root.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-callback').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
+    root.querySelectorAll('[data-cost-tab]').forEach(tab => tab.addEventListener('click', () => {
+      root.closest('[data-cost-panel="model"]')?.parentElement.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== tab.dataset.costTab));
+      root.closest('.cost-model-card')?.parentElement.parentElement.querySelectorAll('[data-cost-tab]').forEach(button => button.classList.toggle('active', button === tab));
+      if (tab.dataset.costTab === 'simple') simpleUpdate();
+    }));
+    simpleUpdate();
     const runtimeNotches = [.25, 1 / 3, .5, 1, 2, 3, 4];
     const runtimeLabel = value => {
       const labels = ['1/4', '1/3', '1/2', '1x', '2x', '3x', '4x'];
