@@ -157,7 +157,7 @@
       const purchase = base * purchaseFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : purchaseWagon);
       const running = base * runningFuel * (type === 'locomotive' || type === 'multiple_unit' ? 1 : runningWagon);
       const purchaseCallback = Math.min(scoreMax, Math.round(purchase)) * purchaseRuntime;
-      const runningCallback = powered ? Math.min(scoreMax, Math.round(running)) * runningRuntime : 0;
+      const runningCallback = Math.min(scoreMax, Math.round(running)) * runningRuntime;
       const purchaseBase = powered ? powerPurchaseBase : wagonPurchaseBase;
       const runningFuelName = get('cost-fuel').value;
       const runningBase = runningFuelName === 'steam' ? steamRunningBase : runningFuelName === 'electric' || runningFuelName === 'bi-mode' || runningFuelName === 'tri-mode' || runningFuelName === 'battery' ? electricRunningBase : dieselRunningBase;
@@ -174,8 +174,8 @@
       root.querySelector('#cost-purchase-value').textContent = runtimeLabel(purchaseRuntime);
       root.querySelector('#cost-running-value').textContent = runtimeLabel(runningRuntime);
       root.querySelector('#cost-score-max-value').textContent = scoreMax.toLocaleString('en-GB');
-      root.querySelector('#cost-adjusted-bases').innerHTML = `<strong>Adjusted bases</strong><span>${money(purchaseBase)} purchase · ${powered ? money(runningBase) + ' running' : 'RUNNING_COST_NONE'}</span>`;
-      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${powered ? money(runningBase * runningCallback / 256) + ' per vehicle · ' + money(runningBase * runningCallback * formation / 256) + ' formation' : 'No charge: RUNNING_COST_NONE'}</small></div><div class="cost-result costs"><span>Costs</span><strong>${money(purchaseBase * purchaseCallback * formation / 256)} purchase<br>${powered ? money(runningBase * runningCallback * formation / 256) : '£0'} running</strong><small>Formation total</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
+      root.querySelector('#cost-adjusted-bases').innerHTML = `<strong>Adjusted bases</strong><span>${money(purchaseBase)} purchase · ${money(runningBase)} running</span>`;
+      root.querySelector('#cost-model-output').innerHTML = `<div class="cost-result"><span>Purchase callback</span><strong>${Math.round(purchaseCallback).toLocaleString('en-GB')}</strong><small>${money(purchaseBase * purchaseCallback / 256)} per vehicle · ${money(purchaseBase * purchaseCallback * formation / 256)} formation</small></div><div class="cost-result"><span>Running-cost callback</span><strong>${Math.round(runningCallback).toLocaleString('en-GB')}</strong><small>${money(runningBase * runningCallback / 256)} per vehicle · ${money(runningBase * runningCallback * formation / 256)} formation</small></div><div class="cost-result costs"><span>Costs</span><strong>${money(purchaseBase * purchaseCallback * formation / 256)} purchase<br>${money(runningBase * runningCallback * formation / 256)} running</strong><small>Formation total</small></div><div class="cost-result"><span>Model branch</span><strong>${esc(names[type])}</strong><small>Fuel multiplier: ${purchaseFuel.toFixed(2)} purchase / ${runningFuel.toFixed(2)} running</small></div>`;
     };
     root.querySelectorAll('input,select').forEach(input => input.addEventListener('input', update));
     root.querySelectorAll('select').forEach(input => input.addEventListener('change', update));
