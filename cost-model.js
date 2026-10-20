@@ -116,7 +116,7 @@
     const simpleExponentDefaults = {PR_BUILD_VEHICLE_TRAIN:0,PR_BUILD_VEHICLE_WAGON:0,PR_RUNNING_TRAIN_STEAM:0,PR_RUNNING_TRAIN_DIESEL:0,PR_RUNNING_TRAIN_ELECTRIC:0};
     const simpleBases = {PR_BUILD_VEHICLE_TRAIN:400000,PR_BUILD_VEHICLE_WAGON:2000,PR_RUNNING_TRAIN_STEAM:5600,PR_RUNNING_TRAIN_DIESEL:5200,PR_RUNNING_TRAIN_ELECTRIC:4800};
     const simpleExponentList = get('simple-exponent-list');
-    simpleExponentList.innerHTML = Object.entries(simpleExponentDefaults).map(([key,value]) => `<label class="simple-exponent-row"><span>${basecostLabels[key]}</span><output data-simple-exp-output="${key}">${value}</output><input type="range" min="-8" max="16" step="1" value="${value}" data-simple-exp="${key}"></label>`).join('');
+    simpleExponentList.innerHTML = Object.entries(simpleExponentDefaults).map(([key,value]) => `<label class="simple-exponent-row" data-simple-exp-row="${key}"><span>${basecostLabels[key]}</span><output data-simple-exp-output="${key}">${value}</output><input type="range" min="-8" max="16" step="1" value="${value}" data-simple-exp="${key}"></label>`).join('');
     const simpleUpdate = () => {
       const maximum = 65535;
       const purchaseValue = Math.min(maximum, Math.max(0, number('simple-purchase-value')));
@@ -124,6 +124,8 @@
       const cars = Math.max(1, number('simple-cars'));
       const purchaseKey = get('simple-purchase-base').value === 'train' ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON';
       const runningKey = `PR_RUNNING_TRAIN_${get('simple-running-base').value.toUpperCase()}`;
+      const relevant = new Set([purchaseKey, runningKey]);
+      pageRoot.querySelectorAll('[data-simple-exp-row]').forEach(row => row.classList.toggle('relevant', relevant.has(row.dataset.simpleExpRow)));
       const purchaseCost = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value)) * purchaseValue / 256;
       const runningCost = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value)) * runningValue / 256;
       const suffix = cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : '';
