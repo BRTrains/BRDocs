@@ -157,7 +157,30 @@
       get(`[data-simple-exp-output="${input.dataset.simpleExp}"]`).textContent = input.value;
       simpleUpdate();
     }));
-    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-purchase-difficulty,#simple-running-difficulty,#simple-mode-callback,#simple-mode-cost').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
+    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-purchase-difficulty,#simple-running-difficulty').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
+    let simpleMode = get('simple-mode-cost').checked;
+    const switchSimpleMode = () => {
+      const nextMode = get('simple-mode-cost').checked;
+      if (nextMode === simpleMode) return simpleUpdate();
+      const purchaseKey = get('simple-purchase-base').value === 'train' ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON';
+      const runningKey = `PR_RUNNING_TRAIN_${get('simple-running-base').value.toUpperCase()}`;
+      const purchaseBase = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value));
+      const runningBase = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value));
+      const purchaseDifficulty = Number(get('simple-purchase-difficulty').value);
+      const runningDifficulty = Number(get('simple-running-difficulty').value);
+      const purchaseValue = number('simple-purchase-value');
+      const runningValue = number('simple-running-value');
+      if (nextMode) {
+        get('simple-purchase-value').value = (purchaseBase * purchaseValue / 256 * purchaseDifficulty).toFixed(2);
+        get('simple-running-value').value = (runningBase * runningValue / 256 * runningDifficulty).toFixed(2);
+      } else {
+        get('simple-purchase-value').value = (purchaseValue * 256 / purchaseBase / purchaseDifficulty).toFixed(2);
+        get('simple-running-value').value = (runningValue * 256 / runningBase / runningDifficulty).toFixed(2);
+      }
+      simpleMode = nextMode;
+      simpleUpdate();
+    };
+    pageRoot.querySelectorAll('#simple-mode-callback,#simple-mode-cost').forEach(input => input.addEventListener('change', switchSimpleMode));
     const tabRoot = pageRoot;
     tabRoot.querySelectorAll('[data-cost-tab]').forEach(tab => tab.addEventListener('click', () => {
       tabRoot.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== tab.dataset.costTab));
