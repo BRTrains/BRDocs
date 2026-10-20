@@ -146,7 +146,7 @@
         const runningFactor = Math.min(maximum, Math.max(0, Math.round(idealRunning)));
         const purchaseCost = purchaseBase * purchaseFactor / 256;
         const runningCost = runningBase * runningFactor / 256;
-        get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase</span><strong>Ideal value: ${idealPurchase.toFixed(2)}<br>Actual value: ${purchaseFactor.toLocaleString('en-GB')}</strong><small>Ideal £${purchaseValue.toLocaleString('en-GB')} · Actual £${money(purchaseCost)}${cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : ''}</small></div><div class="cost-result"><span>Running</span><strong>Ideal value: ${idealRunning.toFixed(2)}<br>Actual value: ${runningFactor.toLocaleString('en-GB')}</strong><small>Ideal £${runningValue.toLocaleString('en-GB')} · Actual £${money(runningCost)}${cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : ''}</small></div>`;
+        get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase</span><strong>Ideal value: ${idealPurchase.toFixed(2)}<br>Actual value: ${purchaseFactor.toLocaleString('en-GB')}</strong><small>Ideal £${purchaseValue.toLocaleString('en-GB')} · Actual ${money(purchaseCost)}${cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : ''}</small></div><div class="cost-result"><span>Running</span><strong>Ideal value: ${idealRunning.toFixed(2)}<br>Actual value: ${runningFactor.toLocaleString('en-GB')}</strong><small>Ideal £${runningValue.toLocaleString('en-GB')} · Actual ${money(runningCost)}${cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : ''}</small></div>`;
       }
 
     };
