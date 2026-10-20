@@ -144,7 +144,6 @@
       tabRoot.querySelectorAll('[data-cost-tab]').forEach(button => button.classList.toggle('active', button === tab));
       if (tab.dataset.costTab === 'simple') simpleUpdate();
     }));
-    simpleUpdate();
     const runtimeNotches = [.25, 1 / 3, .5, 1, 2, 3, 4];
     const runtimeLabel = value => {
       const labels = ['1/4', '1/3', '1/2', '1x', '2x', '3x', '4x'];
@@ -243,5 +242,6 @@
       update();
     });
     update();
+    simpleUpdate();
   };
 })();
