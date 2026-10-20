@@ -88,7 +88,7 @@
           <label class="simple-toggle"><input id="simple-callback" type="checkbox" checked> Callback value <span>(max 65,535)</span></label>
         </div>
         <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
-        <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"></div>
+        <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"><div class="cost-result"><span>Purchase cost</span><strong>£156,250</strong><small>Per car</small></div><div class="cost-result"><span>Running cost</span><strong>£2,031</strong><small>Per car</small></div></div>
       </section>
     </div>
     <p class="cost-model-note">The calculator mirrors BRBuild’s current model. OpenTTD uses a £400,000 purchase base for powered train vehicles and £2,000 for wagons/coaches. BRBuild’s default score maximum is 1,000; the slider is provided for calibration experiments.</p>`;
@@ -244,4 +244,5 @@
     update();
     simpleUpdate();
   };
+  window.maintainerPageHooks['cost-model:simple'] = () => document.querySelector('[data-cost-tab="simple"]')?.click();
 })();
