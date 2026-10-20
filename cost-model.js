@@ -85,7 +85,7 @@
           <div class="cost-model-field"><label for="simple-cars">Number of cars</label><input id="simple-cars" type="number" min="1" value="1"></div>
           <div class="cost-model-field"><label for="simple-purchase-base">Purchase base</label><select id="simple-purchase-base"><option value="train">Powered train (£400,000)</option><option value="wagon">Wagon/coach (£2,000)</option></select></div>
           <div class="cost-model-field"><label for="simple-running-base">Running base</label><select id="simple-running-base"><option value="steam">Steam (£5,600)</option><option value="diesel" selected>Diesel (£5,200)</option><option value="electric">Electric (£4,800)</option></select></div>
-          <label class="simple-toggle"><input id="simple-callback" type="checkbox" checked> Callback value <span>(max 65,535)</span></label>
+          <fieldset class="simple-toggle"><legend>Cost value mode</legend><label><input id="simple-property" name="simple-value-mode" type="radio"> Property value (max 255)</label><label><input id="simple-callback" name="simple-value-mode" type="radio" checked> Callback value (max 65,535)</label></fieldset>
         </div>
         <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
         <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"><div class="cost-result"><span>Purchase cost</span><strong>£156,250</strong><small>Per car</small></div><div class="cost-result"><span>Running cost</span><strong>£2,031</strong><small>Per car</small></div></div>
@@ -130,14 +130,14 @@
       const suffix = cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : '';
       const runningSuffix = cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : '';
       get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase cost</span><strong>${money(purchaseCost)}</strong><small>${cars > 1 ? suffix.slice(1) : 'Per car'}</small></div><div class="cost-result"><span>Running cost</span><strong>${money(runningCost)}</strong><small>${cars > 1 ? runningSuffix.slice(1) : 'Per car'}</small></div>`;
-      get('simple-callback').parentElement.querySelector('span').textContent = callback ? '(max 65,535)' : '(max 255)';
+
     };
     pageRoot.querySelectorAll('[data-simple-exp]').forEach(input => input.addEventListener('input', () => {
       input.value = Math.max(-8, Math.min(16, Math.round(Number(input.value))));
       get(`[data-simple-exp-output="${input.dataset.simpleExp}"]`).textContent = input.value;
       simpleUpdate();
     }));
-    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-callback').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
+    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-property,#simple-callback').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
     const tabRoot = root.closest('[data-cost-panel="model"]')?.parentElement || document;
     tabRoot.querySelectorAll('[data-cost-tab]').forEach(tab => tab.addEventListener('click', () => {
       tabRoot.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== tab.dataset.costTab));
@@ -244,5 +244,8 @@
     update();
     simpleUpdate();
   };
-  window.maintainerPageHooks['cost-model:simple'] = () => document.querySelector('[data-cost-tab="simple"]')?.click();
+  window.maintainerPageHooks['cost-model:simple'] = () => {
+    document.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== 'simple'));
+    document.querySelectorAll('[data-cost-tab]').forEach(button => button.classList.toggle('active', button.dataset.costTab === 'simple'));
+  };
 })();
