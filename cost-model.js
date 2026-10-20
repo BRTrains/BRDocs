@@ -171,11 +171,11 @@
       const purchaseValue = number('simple-purchase-value');
       const runningValue = number('simple-running-value');
       if (nextMode) {
-        get('simple-purchase-value').value = (purchaseBase * purchaseValue / 256 * purchaseDifficulty).toFixed(2);
-        get('simple-running-value').value = (runningBase * runningValue / 256 * runningDifficulty).toFixed(2);
+        get('simple-purchase-value').value = Math.round(purchaseBase * purchaseValue / 256 * purchaseDifficulty);
+        get('simple-running-value').value = Math.round(runningBase * runningValue / 256 * runningDifficulty);
       } else {
-        get('simple-purchase-value').value = (purchaseValue * 256 / purchaseBase / purchaseDifficulty).toFixed(2);
-        get('simple-running-value').value = (runningValue * 256 / runningBase / runningDifficulty).toFixed(2);
+        get('simple-purchase-value').value = Math.round(purchaseValue * 256 / purchaseBase / purchaseDifficulty);
+        get('simple-running-value').value = Math.round(runningValue * 256 / runningBase / runningDifficulty);
       }
       simpleMode = nextMode;
       simpleUpdate();
