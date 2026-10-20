@@ -103,8 +103,8 @@
     const get = id => pageRoot.querySelector(`#${id}`);
     const list = get('cost-basecost-list');
     list.innerHTML = Object.entries(basecostGroups).map(([group, keys]) => `<section class="cost-base-group"><h4>${group}</h4>${keys.map(key => `<label class="cost-base-row" data-basecost-row="${key}"><span>${basecostLabels[key]}</span><output data-basecost-output="${key}">${basecostDefaults[key] > 0 ? `+${basecostDefaults[key]}` : basecostDefaults[key] ?? '0'}</output><input type="range" min="-8" max="16" step="1" list="cost-basecost-notches" value="${basecostDefaults[key] ?? 0}" data-basecost="${key}"></label>`).join('')}</section>`).join('');
-    const baseExponent = key => Number(root.querySelector(`[data-basecost="${key}"]`).value);
-    root.querySelectorAll('[data-basecost]').forEach(input => input.addEventListener('input', () => {
+    const baseExponent = key => Number(pageRoot.querySelector(`[data-basecost="${key}"]`).value);
+    pageRoot.querySelectorAll('[data-basecost]').forEach(input => input.addEventListener('input', () => {
       input.value = Math.max(-8, Math.min(16, Math.round(Number(input.value))));
       const value = Number(input.value);
       const output = root.querySelector(`[data-basecost-output="${input.dataset.basecost}"]`);
@@ -132,12 +132,12 @@
       get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase cost</span><strong>${money(purchaseCost)}</strong><small>${cars > 1 ? suffix.slice(1) : 'Per car'}</small></div><div class="cost-result"><span>Running cost</span><strong>${money(runningCost)}</strong><small>${cars > 1 ? runningSuffix.slice(1) : 'Per car'}</small></div>`;
       get('simple-callback').parentElement.querySelector('span').textContent = callback ? '(max 65,535)' : '(max 255)';
     };
-    root.querySelectorAll('[data-simple-exp]').forEach(input => input.addEventListener('input', () => {
+    pageRoot.querySelectorAll('[data-simple-exp]').forEach(input => input.addEventListener('input', () => {
       input.value = Math.max(-8, Math.min(16, Math.round(Number(input.value))));
       get(`[data-simple-exp-output="${input.dataset.simpleExp}"]`).textContent = input.value;
       simpleUpdate();
     }));
-    root.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-callback').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
+    pageRoot.querySelectorAll('#simple-purchase-value,#simple-running-value,#simple-cars,#simple-purchase-base,#simple-running-base,#simple-callback').forEach(input => { input.addEventListener('input', simpleUpdate); input.addEventListener('change', simpleUpdate); });
     const tabRoot = root.closest('[data-cost-panel="model"]')?.parentElement || document;
     tabRoot.querySelectorAll('[data-cost-tab]').forEach(tab => tab.addEventListener('click', () => {
       tabRoot.querySelectorAll('[data-cost-panel]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.costPanel !== tab.dataset.costTab));
@@ -158,7 +158,7 @@
       select.innerHTML = options.map(key => `<option value="${key}">${key}</option>`).join('');
       select.value = options.includes(current) ? current : options[0];
     };
-    root.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => {
+    pageRoot.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => {
       const values = presets.find(([label]) => label === button.dataset.preset)?.[1];
       if (!values) return;
       get('cost-train-type').value = values.type;
