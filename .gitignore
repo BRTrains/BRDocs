@@ -1,4 +1,5 @@
 .cache/
 .images/
 .admin-password-hash
+.admin-audit.log
 .overrides/
