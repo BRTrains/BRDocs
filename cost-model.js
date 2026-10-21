@@ -87,7 +87,7 @@
           <div class="cost-model-field"><label for="simple-purchase-base">Purchase base</label><select id="simple-purchase-base"><option value="train">Powered train (£400,000)</option><option value="wagon">Wagon/coach (£2,000)</option></select></div>
           <div class="cost-model-field"><label for="simple-running-base">Running base</label><select id="simple-running-base"><option value="steam">Steam (£5,600)</option><option value="diesel" selected>Diesel (£5,200)</option><option value="electric">Electric (£4,800)</option></select></div>
         </div>
-        <div class="simple-secondary-row"><div class="cost-model-field"><label for="simple-purchase-difficulty">Purchase cost difficulty</label><select id="simple-purchase-difficulty"><option value="0.75">Low (0.75×)</option><option value="1" selected>Medium (1.0×)</option><option value="1.25">High (1.25×)</option></select></div><div class="cost-model-field"><label for="simple-running-difficulty">Running cost difficulty</label><select id="simple-running-difficulty"><option value="0.75">Low (0.75×)</option><option value="1" selected>Medium (1.0×)</option><option value="1.25">High (1.25×)</option></select></div><fieldset class="simple-toggle"><legend>Calculator mode</legend><label><input id="simple-mode-callback" name="simple-calculator-mode" type="radio" checked> Callback → £</label><label><input id="simple-mode-cost" name="simple-calculator-mode" type="radio"> £ → callback</label></fieldset></div>
+        <div class="simple-secondary-row"><div class="cost-model-field"><label for="simple-purchase-difficulty">Purchase cost difficulty</label><select id="simple-purchase-difficulty"><option value="6">Low (0.75×)</option><option value="8" selected>Medium (1.0×)</option><option value="9">High (1.125×)</option></select></div><div class="cost-model-field"><label for="simple-running-difficulty">Running cost difficulty</label><select id="simple-running-difficulty"><option value="6">Low (0.75×)</option><option value="8" selected>Medium (1.0×)</option><option value="9">High (1.125×)</option></select></div><fieldset class="simple-toggle"><legend>Calculator mode</legend><label><input id="simple-mode-callback" name="simple-calculator-mode" type="radio" checked> Callback → £</label><label><input id="simple-mode-cost" name="simple-calculator-mode" type="radio"> £ → callback</label></fieldset></div>
         <div id="simple-cost-output" class="simple-cost-output" aria-live="polite"><div class="cost-result"><span>Purchase cost</span><strong>£156,250</strong><small>Per car</small></div><div class="cost-result"><span>Running cost</span><strong>£2,031</strong><small>Per car</small></div></div>
         <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
       </section>
@@ -133,21 +133,21 @@
       const runningKey = `PR_RUNNING_TRAIN_${get('simple-running-base').value.toUpperCase()}`;
       const relevant = new Set([purchaseKey, runningKey]);
       pageRoot.querySelectorAll('[data-simple-exp-row]').forEach(row => row.classList.toggle('relevant', relevant.has(row.dataset.simpleExpRow)));
-      const purchaseBase = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value));
-      const runningBase = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value));
+      const purchaseBase = Math.floor(simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value)) * purchaseDifficulty / 8);
+      const runningBase = Math.floor(simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value)) * runningDifficulty / 8);
       if (!reverse) {
         const purchaseFactor = Math.min(maximum, purchaseValue);
         const runningFactor = Math.min(maximum, runningValue);
-        const purchaseCost = purchaseBase * purchaseFactor / 256 * purchaseDifficulty;
-        const runningCost = runningBase * runningFactor / 256 * runningDifficulty;
+        const purchaseCost = Math.floor(purchaseBase * purchaseFactor / 256);
+        const runningCost = Math.floor(runningBase * runningFactor / 256);
         get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase cost</span><strong>${money(purchaseCost)}</strong><small>${cars > 1 ? `Per car · ${money(purchaseCost * cars)} formation` : 'Per car'}</small></div><div class="cost-result"><span>Running cost</span><strong>${money(runningCost)}</strong><small>${cars > 1 ? `Per car · ${money(runningCost * cars)} formation` : 'Per car'}</small></div>`;
       } else {
         const idealPurchase = purchaseValue * 256 / purchaseBase / purchaseDifficulty;
         const idealRunning = runningValue * 256 / runningBase / runningDifficulty;
         const purchaseFactor = Math.min(maximum, Math.max(0, Math.round(idealPurchase)));
         const runningFactor = Math.min(maximum, Math.max(0, Math.round(idealRunning)));
-        const purchaseCost = purchaseBase * purchaseFactor / 256 * purchaseDifficulty;
-        const runningCost = runningBase * runningFactor / 256 * runningDifficulty;
+        const purchaseCost = Math.floor(purchaseBase * purchaseFactor / 256);
+        const runningCost = Math.floor(runningBase * runningFactor / 256);
         get('simple-cost-output').innerHTML = `<div class="cost-result"><span>Purchase</span><strong>Ideal value: ${idealPurchase.toFixed(2)}<br>Actual value: ${purchaseFactor.toLocaleString('en-GB')}</strong><small>Ideal £${purchaseValue.toLocaleString('en-GB')} · Actual ${money(purchaseCost)}${cars > 1 ? ` per car · ${money(purchaseCost * cars)} formation` : ''}</small></div><div class="cost-result"><span>Running</span><strong>Ideal value: ${idealRunning.toFixed(2)}<br>Actual value: ${runningFactor.toLocaleString('en-GB')}</strong><small>Ideal £${runningValue.toLocaleString('en-GB')} · Actual ${money(runningCost)}${cars > 1 ? ` per car · ${money(runningCost * cars)} formation` : ''}</small></div>`;
       }
 
@@ -164,18 +164,18 @@
       if (nextMode === simpleMode) return simpleUpdate();
       const purchaseKey = get('simple-purchase-base').value === 'train' ? 'PR_BUILD_VEHICLE_TRAIN' : 'PR_BUILD_VEHICLE_WAGON';
       const runningKey = `PR_RUNNING_TRAIN_${get('simple-running-base').value.toUpperCase()}`;
-      const purchaseBase = simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value));
-      const runningBase = simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value));
       const purchaseDifficulty = Number(get('simple-purchase-difficulty').value);
       const runningDifficulty = Number(get('simple-running-difficulty').value);
+      const purchaseBase = Math.floor(simpleBases[purchaseKey] * (2 ** Number(get(`[data-simple-exp="${purchaseKey}"]`).value)) * purchaseDifficulty / 8);
+      const runningBase = Math.floor(simpleBases[runningKey] * (2 ** Number(get(`[data-simple-exp="${runningKey}"]`).value)) * runningDifficulty / 8);
       const purchaseValue = number('simple-purchase-value');
       const runningValue = number('simple-running-value');
       if (nextMode) {
-        get('simple-purchase-value').value = Math.round(purchaseBase * purchaseValue / 256 * purchaseDifficulty);
-        get('simple-running-value').value = Math.round(runningBase * runningValue / 256 * runningDifficulty);
+        get('simple-purchase-value').value = Math.floor(purchaseBase * purchaseValue / 256);
+        get('simple-running-value').value = Math.floor(runningBase * runningValue / 256);
       } else {
-        get('simple-purchase-value').value = Math.round(purchaseValue * 256 / purchaseBase / purchaseDifficulty);
-        get('simple-running-value').value = Math.round(runningValue * 256 / runningBase / runningDifficulty);
+        get('simple-purchase-value').value = Math.round(purchaseValue * 256 / purchaseBase);
+        get('simple-running-value').value = Math.round(runningValue * 256 / runningBase);
       }
       simpleMode = nextMode;
       simpleUpdate();
