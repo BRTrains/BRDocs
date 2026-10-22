@@ -92,7 +92,7 @@
         <div class="simple-exponents"><h3>NML base-cost exponents</h3><div id="simple-exponent-list"></div></div>
       </section>
     </div>`;
-  const page = {title:'Cost model calculator', intro:'Enter representative vehicle data and see the generated purchase and running-cost callback values.', body:`<p>Use this tool to sanity-check the relative position of wagons, coaches, locomotives and multiple units before changing BRBuild’s constants. The callback values are the factors emitted to NewGRF; the pound figures use OpenTTD’s no-inflation base prices.</p>${form}`};
+  const page = {title:'Cost model calculator', intro:'Enter representative vehicle data and see the generated purchase and running-cost callback values.', body:`${form}`};
   maintainerPages['cost-model'] = page;
   window.maintainerPageHooks = window.maintainerPageHooks || {};
   window.maintainerPageHooks['cost-model'] = () => {
